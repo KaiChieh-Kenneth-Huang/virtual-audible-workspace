@@ -1,0 +1,78 @@
+<!-- This is a static file -->
+<!-- served from your routes in server.js -->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="A cool thing made with Glitch">
+
+    <title>Ambient Sound Mixer</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" crossorigin="anonymous">
+    <link id="favicon" rel="icon" href="https://glitch.com/edit/favicon-app.ico" type="image/x-icon">
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet">
+    <!-- import the webpage's stylesheet -->
+    <link rel="stylesheet" href="/style.css">
+  </head>
+  <body>
+    <div class="container mt-5">
+      <div class="row justify-content-center">
+        <div class="col-lg-5 mb-2">
+          <h1>Ambient Sound Mixer</h1>
+          <div class="sound-sources-icon-container">
+            <img src="resources/img/volume-high.svg" class="icon" alt="source" id="sourceAIcon">
+            <img src="resources/img/microphone.svg" class="icon" alt="source" id="sourceBIcon">
+            <img src="resources/img/musical-note.svg" class="icon" alt="source" id="sourceCIcon">
+            <img src="resources/img/armchair.svg" class="icon" alt="source" id="sourceDIcon">
+          </div>
+          <p>
+            The
+            <img src="resources/img/person.svg" class="icon" alt="source" id="listenerIcon">
+            icon indicates your location.
+          </p>
+          <div class="form-row">
+            <div class="form-group col-md-6">
+              <label for="roomDimensionsSelect" class="col-form-label">Room Dimensions</label>
+              <select id="roomDimensionsSelect" class="form-control">
+                <option value="small" selected>Small</option>
+                <option value="medium">Medium</option>
+                <option value="large">Large</option>
+                <option value="huge">Huge</option>
+              </select>
+            </div>
+            <div class="form-group col-md-6">
+              <label for="roomMaterialsSelect" class="col-form-label">Wall Materials</label>
+              <select id="roomMaterialsSelect" class="form-control">
+                <option value="brick" selected>Brick</option>
+                <option value="curtains">Curtains</option>
+                <option value="marble">Marble</option>
+                <option value="outside">Outdoors</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div style="width:100%">
+          <canvas id="canvas"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <script src="/constants.js"></script>
+    <script src="/classes.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/resonance-audio/build/resonance-audio.min.js"></script>
+    <script src="/canvas-control.js"></script>
+    <script src="/room-models.js"></script>
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-ygbV9kiqUc6oa4msXn9868pTtWMgiQaeYH7/t7LECLbyPA2x65Kgf80OJFdroafW" crossorigin="anonymous"></script>
+
+    
+<!--     <button id="test" type="button" class="btn btn-primary">Primary</button>
+    
+    <script src="https://cdn.jsdelivr.net/npm/resonance-audio/build/resonance-audio.min.js"></script>
+    <script src="/script.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-ygbV9kiqUc6oa4msXn9868pTtWMgiQaeYH7/t7LECLbyPA2x65Kgf80OJFdroafW" crossorigin="anonymous"></script> -->
+  </body>
+</html>
