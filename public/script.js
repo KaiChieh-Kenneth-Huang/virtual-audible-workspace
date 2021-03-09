@@ -1,5 +1,6 @@
+/* This is a testing code */
 
-let audioContext;
+// let audioContext;
 
 
 let resonanceAudioScene;

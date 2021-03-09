@@ -1,14 +1,15 @@
 let audioContext;
 let canvasControl;
-let scene;
+let audioScene;
 let audioElements = [];
 let audioElementSources = [];
 let soundSources = [];
-let sourceIds = ['sourceAButton', 'sourceBButton', 'sourceCButton'];
+let sourceIds = ['sourceAButton', 'sourceBButton', 'sourceCButton', 'sourceDIcon'];
 let sourceIconIdsAndFile = {
-  sourceAIcon: 'resources/cube-sound.wav',
-  sourceBIcon: 'resources/speech-sample.wav',
-  sourceCIcon: 'resources/music.wav',
+  sourceAIcon: 'resources/sounds/cube-sound.wav',
+  sourceBIcon: 'resources/sounds/speech-sample.wav',
+  sourceCIcon: 'resources/sounds/music.wav',
+  sourceDIcon: 'resources/sounds/speech-sample.wav',
 };
 let dimensions = {
   small: {
@@ -61,7 +62,7 @@ function selectRoomProperties() {
     document.getElementById('roomDimensionsSelect').value;
   materialSelection =
     document.getElementById('roomMaterialsSelect').value;
-  scene.setRoomProperties(dimensions[dimensionSelection],
+  audioScene.setRoomProperties(dimensions[dimensionSelection],
     materials[materialSelection]);
   canvasControl.invokeCallback();
 }
@@ -83,7 +84,7 @@ function updatePositions(elements) {
     if (i !== 0) {
       soundSources[i-1].setPosition(x, y, z);
     } else {
-      scene.setListenerPosition(x, 1.2, z);
+      audioScene.setListenerPosition(x, 1.2, z);
     }
   }
 }
@@ -109,15 +110,14 @@ function initAudio() {
   // }
 
   // Initialize scene and create Source(s).
-  scene = new ResonanceAudio(audioContext, {
+  audioScene = new ResonanceAudio(audioContext, {
     ambisonicOrder: 1,
   });
   // for (let i = 0; i < audioSources.length; i++) {
   //   soundSources[i] = scene.createSource();
   //   audioElementSources[i].connect(soundSources[i].input);
   // }
-  scene.output.connect(audioContext.destination);
-
+  audioScene.output.connect(audioContext.destination);
   audioReady = true;
 }
 
@@ -168,8 +168,16 @@ let onLoad = function() {
       y: 0.5,
       radius: 0.04,
       alpha: 0.75,
-      clickable: true,
+      clickable: false,
     },
+    /*{
+      icon: 'sourceDIcon',
+      x: 0.2,
+      y: 0.2,
+      radius: 0.04,
+      alpha: 0.75,
+      clickable: true,
+    },*/
     // {
     //   icon: 'sourceAIcon',
     //   x: 0.25,
@@ -216,11 +224,23 @@ let addElement = function(id) {
   newAudioElement.play();
   audioElementSources.push(audioContext.createMediaElementSource(newAudioElement));
 
-  soundSources.push(scene.createSource());
+  soundSources.push(audioScene.createSource());
   audioElementSources[audioElementSources.length - 1].connect(soundSources[soundSources.length - 1].input);
   
-  //scene.output.connect(audioContext.destination);
-  
+  // test connecting another sound to AmbientSonic element
+  //audioElements.push(document.createElement('audio'));
+  //const newAudioElement2 = audioElements[audioElements.length - 1];
+  //newAudioElement2.src = 'resources/sounds/speech-sample.wav'; // todo
+  //newAudioElement2.crossOrigin = 'anonymous';
+  //newAudioElement2.load();
+  //newAudioElement2.loop = true;
+  //newAudioElement2.play();
+  //audioElementSources.push(audioContext.createMediaElementSource(newAudioElement2));
+  //const testNode = audioContext.createMediaElementSource(newAudioElement2);
+
+  //soundSources.push(audioScene.createSource());
+  //testNode.connect(soundSources[soundSources.length - 1].input);
+
   canvasControl.addElement({
       icon: id,
       x: 0.1,

@@ -22,13 +22,14 @@
         <div class="col-lg-5 mb-2">
           <h1>Ambient Sound Mixer</h1>
           <div class="sound-sources-icon-container">
-            <img src="resources/volume-high.svg" class="icon" alt="source" id="sourceAIcon">
-            <img src="resources/microphone.svg" class="icon" alt="source" id="sourceBIcon">
-            <img src="resources/musical-note.svg" class="icon" alt="source" id="sourceCIcon">
+            <img src="resources/img/volume-high.svg" class="icon" alt="source" id="sourceAIcon">
+            <img src="resources/img/microphone.svg" class="icon" alt="source" id="sourceBIcon">
+            <img src="resources/img/musical-note.svg" class="icon" alt="source" id="sourceCIcon">
+            <img src="resources/img/armchair.svg" class="icon" alt="source" id="sourceDIcon">
           </div>
           <p>
             The
-            <img src="resources/person.svg" class="icon" alt="source" id="listenerIcon">
+            <img src="resources/img/person.svg" class="icon" alt="source" id="listenerIcon">
             icon indicates your location.
           </p>
           <div class="form-row">
@@ -52,14 +53,14 @@
             </div>
           </div>
         </div>
-        <div class="col-lg-5 text-center">
-          <div style="width:100%">
-            <canvas id="canvas"></canvas>
-          </div>
+        <div style="width:100%">
+          <canvas id="canvas"></canvas>
         </div>
       </div>
     </div>
 
+    <script src="/constants.js"></script>
+    <script src="/classes.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/resonance-audio/build/resonance-audio.min.js"></script>
     <script src="/canvas-control.js"></script>
     <script src="/room-models.js"></script>

@@ -20,24 +20,29 @@ function CanvasControl(canvas, elements, callbackFunc) {
 
   this._lastMoveEventTime = 0;
   this._minimumThreshold = 16;
+  
+  this._isMoving = false;
+  
+  this.listener = elements[0];
+  
   let that = this;
-  canvas.addEventListener('touchstart', function(event) {
-    that._cursorDownFunc(event);
-  });
+//   canvas.addEventListener('touchstart', function(event) {
+//     that._cursorDownFunc(event);
+//   });
 
-  canvas.addEventListener('mousedown', function(event) {
-    that._cursorDownFunc(event);
-  });
+//   canvas.addEventListener('mousedown', function(event) {
+//     that._cursorDownFunc(event);
+//   });
 
-  canvas.addEventListener('touchmove', function(event) {
-    let currentEventTime = Date.now();
-    if (currentEventTime - that._lastMoveEventTime > that._minimumThreshold) {
-      that._lastMoveEventTime = currentEventTime;
-      if (that._cursorMoveFunc(event)) {
-        event.preventDefault();
-      }
-    }
-  }, true);
+//   canvas.addEventListener('touchmove', function(event) {
+//     let currentEventTime = Date.now();
+//     if (currentEventTime - that._lastMoveEventTime > that._minimumThreshold) {
+//       that._lastMoveEventTime = currentEventTime;
+//       if (that._cursorMoveFunc(event)) {
+//         event.preventDefault();
+//       }
+//     }
+//   }, true);
 
   canvas.addEventListener('mousemove', function(event) {
     let currentEventTime = Date.now();
@@ -73,7 +78,7 @@ CanvasControl.prototype.invokeCallback = function() {
 
 CanvasControl.prototype.resize = function() {
   let canvasWidth = this._canvas.parentNode.clientWidth;
-  let maxCanvasSize = 480;
+  let maxCanvasSize = 600;
   if (canvasWidth > maxCanvasSize) {
     canvasWidth = maxCanvasSize;
   }
@@ -124,6 +129,9 @@ CanvasControl.prototype.getNearestElement = function(cursorPosition) {
   let minIndex = -1;
   let minXOffset = 0;
   let minYOffset = 0;
+  let x = 0;
+  let y = 0;
+  
   for (let i = 0; i < this._elements.length; i++) {
     if (this._elements[i].clickable == true) {
       let dx = this._elements[i].x * this._canvas.width - cursorPosition.x;
@@ -135,6 +143,8 @@ CanvasControl.prototype.getNearestElement = function(cursorPosition) {
         minIndex = i;
         minXOffset = dx;
         minYOffset = dy;
+        x = this._elements[i].x;
+        y = this._elements[i].y;
       }
     }
   }
@@ -142,9 +152,68 @@ CanvasControl.prototype.getNearestElement = function(cursorPosition) {
     index: minIndex,
     xOffset: minXOffset,
     yOffset: minYOffset,
+    x: x,
+    y: y,
   };
 };
 
+
+CanvasControl.prototype.addElement = function(element) {
+  this._elements.push(element);
+  this.invokeCallback();
+  this.draw();
+}
+
+CanvasControl.prototype._cursorMoveFunc = function(event) {
+  let cursorPosition = this.getCursorPosition(event);
+  let selection = this.getNearestElement(cursorPosition);
+  
+  if (selection.index > -1) {
+    this._canvas.style.cursor = 'pointer';
+    return true;
+  } else {
+    this._canvas.style.cursor = 'default';
+    return false;
+  }
+};
+
+CanvasControl.prototype._cursorUpFunc = function(event) {
+  let cursorPosition = this.getCursorPosition(event);
+  let selection = this.getNearestElement(cursorPosition);
+  
+  const moveStepSize = 0.005;
+  
+  if (selection.index > -1) {
+    let moveInterval = setInterval(() => {
+      console.log(selection.x);
+      if (Math.abs(selection.x - this.listener.x) > moveStepSize) {
+        if (selection.x > this.listener.x) {
+          this.listener.x += moveStepSize;
+        } else {
+          this.listener.x -= moveStepSize;
+        }
+      } else if (Math.abs(selection.y - this.listener.y) > moveStepSize) {
+        if (selection.y > this.listener.y) {
+          this.listener.y += moveStepSize;
+        } else {
+          this.listener.y -= moveStepSize;
+        }
+      } else {
+        this.listener.x = selection.x;
+        this.listener.y = selection.y;
+        clearInterval(moveInterval);
+      }
+      this.invokeCallback();
+      this.draw();
+    }, 20);
+  }
+};
+
+CanvasControl.prototype._moveElement = function(element, position) {
+  
+};
+
+// old methods for reference
 CanvasControl.prototype._cursorUpdateFunc = function(cursorPosition) {
   if (this._selected.index > -1) {
     this._elements[this._selected.index].x = Math.max(0, Math.min(1,
@@ -156,38 +225,31 @@ CanvasControl.prototype._cursorUpdateFunc = function(cursorPosition) {
   this.draw();
 };
 
-CanvasControl.prototype._cursorDownFunc = function(event) {
-  this._cursorDown = true;
-  let cursorPosition = this.getCursorPosition(event);
-  this._selected = this.getNearestElement(cursorPosition);
-  this._cursorUpdateFunc(cursorPosition);
-  document.body.style = 'overflow: hidden;';
-};
+// CanvasControl.prototype._cursorDownFunc = function(event) {
+//   this._cursorDown = true;
+//   let cursorPosition = this.getCursorPosition(event);
+//   this._selected = this.getNearestElement(cursorPosition);
+//   this._cursorUpdateFunc(cursorPosition);
+//   document.body.style = 'overflow: hidden;';
+// };
 
-CanvasControl.prototype._cursorUpFunc = function(event) {
-  this._cursorDown = false;
-  this._selected.index = -1;
-  document.body.style = '';
-};
+// CanvasControl.prototype._cursorUpFunc = function(event) {
+//   this._cursorDown = false;
+//   this._selected.index = -1;
+//   document.body.style = '';
+// };
 
-CanvasControl.prototype._cursorMoveFunc = function(event) {
-  let cursorPosition = this.getCursorPosition(event);
-  let selection = this.getNearestElement(cursorPosition);
-  if (this._cursorDown == true) {
-    this._cursorUpdateFunc(cursorPosition);
-  }
-  if (selection.index > -1) {
-    this._canvas.style.cursor = 'pointer';
-    return true;
-  } else {
-    this._canvas.style.cursor = 'default';
-    return false;
-  }
-};
-
-
-CanvasControl.prototype.addElement = function(element) {
-  this._elements.push(element);
-  this.invokeCallback();
-  this.draw();
-}
+// CanvasControl.prototype._cursorMoveFunc = function(event) {
+//   let cursorPosition = this.getCursorPosition(event);
+//   let selection = this.getNearestElement(cursorPosition);
+//   if (this._cursorDown == true) {
+//     this._cursorUpdateFunc(cursorPosition);
+//   }
+//   if (selection.index > -1) {
+//     this._canvas.style.cursor = 'pointer';
+//     return true;
+//   } else {
+//     this._canvas.style.cursor = 'default';
+//     return false;
+//   }
+// };
