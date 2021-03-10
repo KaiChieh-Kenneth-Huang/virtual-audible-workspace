@@ -4,9 +4,10 @@
  * @param {Object} elements
  * @param {Function} callbackFunc
  */
-function CanvasControl(canvas, elements, callbackFunc) {
+function CanvasControl(canvas, listener, callbackFunc) {
   this._canvas = canvas;
-  this._elements = elements;
+  this._elements = [listener];
+  this.listener = listener;
   this._callbackFunc = callbackFunc;
 
   this._context = this._canvas.getContext('2d');
@@ -23,7 +24,6 @@ function CanvasControl(canvas, elements, callbackFunc) {
   
   this._isMoving = false;
   
-  this.listener = elements[0];
   
   let that = this;
 //   canvas.addEventListener('touchstart', function(event) {
@@ -78,12 +78,11 @@ CanvasControl.prototype.invokeCallback = function() {
 
 CanvasControl.prototype.resize = function() {
   let canvasWidth = this._canvas.parentNode.clientWidth;
-  let maxCanvasSize = 600;
-  if (canvasWidth > maxCanvasSize) {
-    canvasWidth = maxCanvasSize;
+  if (canvasWidth > MAX_CANVAS_WIDTH) {
+    canvasWidth = MAX_CANVAS_WIDTH;
   }
   this._canvas.width = canvasWidth;
-  this._canvas.height = canvasWidth;
+  this._canvas.height = canvasWidth * MAX_CANVAS_HEIGHT / MAX_CANVAS_WIDTH;
 };
 
 CanvasControl.prototype.draw = function() {
@@ -95,14 +94,26 @@ CanvasControl.prototype.draw = function() {
   this._context.strokeRect(0, 0, this._canvas.width, this._canvas.height);
 
   for (let i = 0; i < this._elements.length; i++) {
-    let icon = document.getElementById(this._elements[i].icon);
+    const icon = document.getElementById(this._elements[i].icon);
+    const width = this._elements[i].width * this._canvas.width / MAX_CANVAS_WIDTH;
+    const height = this._elements[i].height * this._canvas.height / MAX_CANVAS_HEIGHT;
     if (icon !== undefined) {
-      let radiusInPixels = this._elements[i].radius * this._canvas.width;
-      let x = this._elements[i].x * this._canvas.width - radiusInPixels;
-      let y = this._elements[i].y * this._canvas.height - radiusInPixels;
+      const xCenter = this._elements[i].position.x / MAX_CANVAS_WIDTH * this._canvas.width;
+      const yCenter = this._elements[i].position.y / MAX_CANVAS_HEIGHT * this._canvas.height;
+      const x = xCenter - width / 2;
+      const y = yCenter - height / 2;
       this._context.globalAlpha = this._elements[i].alpha;
+
+      // Matrix transformation
+      this._context.translate(xCenter, yCenter);
+      this._context.rotate(this._elements[i].rotation * Math.PI / 180);
+
       this._context.drawImage(
-        icon, x, y, radiusInPixels * 2, radiusInPixels * 2);
+        icon, -width / 2, -height / 2,  width, height
+      );
+
+      this._context.rotate(-this._elements[i].rotation * Math.PI / 180);
+      this._context.translate(-xCenter, -yCenter);
     }
   }
 };
@@ -126,49 +137,54 @@ CanvasControl.prototype.getCursorPosition = function(event) {
 
 CanvasControl.prototype.getNearestElement = function(cursorPosition) {
   let minDistance = 1e8;
-  let minIndex = -1;
-  let minXOffset = 0;
-  let minYOffset = 0;
+  let element;
   let x = 0;
   let y = 0;
   
   for (let i = 0; i < this._elements.length; i++) {
     if (this._elements[i].clickable == true) {
-      let dx = this._elements[i].x * this._canvas.width - cursorPosition.x;
-      let dy = this._elements[i].y * this._canvas.height - cursorPosition.y;
+      let dx = this._elements[i].position.x / MAX_CANVAS_WIDTH * this._canvas.width - cursorPosition.x;
+      let dy = this._elements[i].position.y / MAX_CANVAS_HEIGHT * this._canvas.height - cursorPosition.y;
       let distance = Math.abs(dx) + Math.abs(dy); // Manhattan distance.
-      if (distance < minDistance &&
-          distance < 2 * this._elements[i].radius * this._canvas.width) {
+      if ( // todo: problem arise when rotation performed. consider determining whether pointer is in rotated bounding rectangle
+        distance < minDistance
+        && Math.abs(dx) < this._elements[i].width / 2
+        && Math.abs(dy) < this._elements[i].height / 2
+      ) {
         minDistance = distance;
-        minIndex = i;
-        minXOffset = dx;
-        minYOffset = dy;
-        x = this._elements[i].x;
-        y = this._elements[i].y;
+        element = this._elements[i];
       }
     }
   }
-  return {
-    index: minIndex,
-    xOffset: minXOffset,
-    yOffset: minYOffset,
-    x: x,
-    y: y,
-  };
+  return element;
 };
 
 
 CanvasControl.prototype.addElement = function(element) {
   this._elements.push(element);
+  this._elements.sort((a, b) => {
+    return a.layer - b.layer;
+  });
+  this.invokeCallback();
+  this.draw();
+}
+
+CanvasControl.prototype.addElements = function(elements) {
+  elements.forEach(element => {
+    this._elements.push(element);
+  });
+  this._elements.sort((a, b) => {
+    return a.layer - b.layer;
+  });
   this.invokeCallback();
   this.draw();
 }
 
 CanvasControl.prototype._cursorMoveFunc = function(event) {
   let cursorPosition = this.getCursorPosition(event);
-  let selection = this.getNearestElement(cursorPosition);
+  let nearestElement = this.getNearestElement(cursorPosition);
   
-  if (selection.index > -1) {
+  if (nearestElement) {
     this._canvas.style.cursor = 'pointer';
     return true;
   } else {
@@ -179,33 +195,52 @@ CanvasControl.prototype._cursorMoveFunc = function(event) {
 
 CanvasControl.prototype._cursorUpFunc = function(event) {
   let cursorPosition = this.getCursorPosition(event);
-  let selection = this.getNearestElement(cursorPosition);
+  let nearestElement = this.getNearestElement(cursorPosition);
   
-  const moveStepSize = 0.005;
+  const moveStepSize = 1;
+
   
-  if (selection.index > -1) {
-    let moveInterval = setInterval(() => {
-      console.log(selection.x);
-      if (Math.abs(selection.x - this.listener.x) > moveStepSize) {
-        if (selection.x > this.listener.x) {
-          this.listener.x += moveStepSize;
+
+  if (nearestElement) {
+    const startMoving = () => {
+      this.listener.playIntermittentSound('foot-step');
+      let moveInterval = setInterval(() => {
+        _isMoving = true;
+        if (Math.abs(nearestElement.position.x - this.listener.position.x) > moveStepSize) {
+          if (nearestElement.position.x > this.listener.position.x) {
+            this.listener.position.x += moveStepSize;
+          } else {
+            this.listener.position.x -= moveStepSize;
+          }
+        } else if (Math.abs(nearestElement.position.y - this.listener.position.y) > moveStepSize) {
+          if (nearestElement.position.y > this.listener.position.y) {
+            this.listener.position.y += moveStepSize;
+          } else {
+            this.listener.position.y -= moveStepSize;
+          }
         } else {
-          this.listener.x -= moveStepSize;
+          this.listener.position.x = nearestElement.position.x;
+          this.listener.position.y = nearestElement.position.y;
+          _isMoving = false;
+          this.listener.stopIntermittentSound('foot-step');
+          this.listener.occupiedChair = nearestElement;
+          nearestElement.playSound('chair-slide');
+          clearInterval(moveInterval);
         }
-      } else if (Math.abs(selection.y - this.listener.y) > moveStepSize) {
-        if (selection.y > this.listener.y) {
-          this.listener.y += moveStepSize;
-        } else {
-          this.listener.y -= moveStepSize;
-        }
-      } else {
-        this.listener.x = selection.x;
-        this.listener.y = selection.y;
-        clearInterval(moveInterval);
-      }
-      this.invokeCallback();
-      this.draw();
-    }, 20);
+        this.invokeCallback();
+        this.draw();
+        
+      }, 20);
+    }
+
+    if (this.listener.occupiedChair) {
+      this.listener.occupiedChair.playSound('chair-slide');
+      setTimeout(() => {
+        startMoving();
+      }, 1500);
+    } else {
+      startMoving();
+    }
   }
 };
 
@@ -214,16 +249,16 @@ CanvasControl.prototype._moveElement = function(element, position) {
 };
 
 // old methods for reference
-CanvasControl.prototype._cursorUpdateFunc = function(cursorPosition) {
-  if (this._selected.index > -1) {
-    this._elements[this._selected.index].x = Math.max(0, Math.min(1,
-      (cursorPosition.x + this._selected.xOffset) / this._canvas.width));
-    this._elements[this._selected.index].y = Math.max(0, Math.min(1,
-      (cursorPosition.y + this._selected.yOffset) / this._canvas.height));
-    this.invokeCallback();
-  }
-  this.draw();
-};
+// CanvasControl.prototype._cursorUpdateFunc = function(cursorPosition) {
+//   if (this._selected.index > -1) {
+//     this._elements[this._selected.index].x = Math.max(0, Math.min(1,
+//       (cursorPosition.x + this._selected.xOffset) / this._canvas.width));
+//     this._elements[this._selected.index].y = Math.max(0, Math.min(1,
+//       (cursorPosition.y + this._selected.yOffset) / this._canvas.height));
+//     this.invokeCallback();
+//   }
+//   this.draw();
+// };
 
 // CanvasControl.prototype._cursorDownFunc = function(event) {
 //   this._cursorDown = true;

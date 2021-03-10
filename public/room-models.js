@@ -22,7 +22,7 @@ let dimensions = {
     width: 8, height: 3.4, depth: 9,
   },
   huge: {
-    width: 20, height: 10, depth: 20,
+    width: 20, height: 3, depth: 10,
   },
 };
 let materials = {
@@ -74,17 +74,19 @@ function selectRoomProperties() {
 function updatePositions(elements) {
   if (!audioReady)
     return;
-
-  for (let i = 0; i < elements.length; i++) {
+  // check element.constructor.name to see if set position needed
+  for (const element of elements) {
     // for sounds, coordinates (0, 0, 0) is the center of the room
     // for canvas, coordinates (0, 0, 0) is the top left
-    let x = (elements[i].x - 0.5) * dimensions[dimensionSelection].width / 2;
-    let y = 0.6;
-    let z = (elements[i].y - 0.5) * dimensions[dimensionSelection].depth / 2;
-    if (i !== 0) {
-      soundSources[i-1].setPosition(x, y, z);
-    } else {
-      audioScene.setListenerPosition(x, 1.2, z);
+    if (element.constructor.name === 'SoundSource') {
+      let x = (element.position.x - MAX_CANVAS_WIDTH / 2) / MAX_CANVAS_WIDTH * dimensions[dimensionSelection].width;
+      let y = (element.position.z - dimensions[dimensionSelection].height / 2);
+      let z = (element.position.y - MAX_CANVAS_HEIGHT / 2) / MAX_CANVAS_HEIGHT * dimensions[dimensionSelection].depth;
+    
+      if (element.isListener) {
+        element.audioScene.setListenerPosition(x, y, z);
+      }
+      element.resonanceAudioSrc.setPosition(x, y, z);
     }
   }
 }
@@ -122,34 +124,6 @@ function initAudio() {
 }
 
 let onLoad = function() {
-  // Initialize play button functionality.
-  // for (let i = 0; i < sourceIds.length; i++) {
-  //   let button = document.getElementById(sourceIds[i]);
-  //   button.addEventListener('click', function(event) {
-  //     switch (event.target.textContent) {
-  //       case 'Play': {
-  //         if (!audioReady) {
-  //           initAudio();
-  //         }
-  //         event.target.textContent = 'Pause';
-  //         for(const audioElement of audioElements) {
-  //           audioElement.play();
-  //         }
-  //         //audioElements[i].play();
-  //       }
-  //       break;
-  //       case 'Pause': {
-  //         event.target.textContent = 'Play';
-  //         for(const audioElement of audioElements) {
-  //           audioElement.pause();
-  //         }
-  //         //audioElements[i].pause();
-  //       }
-  //       break;
-  //     }
-  //   });
-  // }
-
   document.getElementById('roomDimensionsSelect').addEventListener(
     'change', function(event) {
       selectRoomProperties();
@@ -159,101 +133,127 @@ let onLoad = function() {
     'change', function(event) {
       selectRoomProperties();
   });
-
-  let canvas = document.getElementById('canvas');
-  let elements = [
-    {
-      icon: 'listenerIcon',
-      x: 0.5,
-      y: 0.5,
-      radius: 0.04,
-      alpha: 0.75,
-      clickable: false,
-    },
-    /*{
-      icon: 'sourceDIcon',
-      x: 0.2,
-      y: 0.2,
-      radius: 0.04,
-      alpha: 0.75,
-      clickable: true,
-    },*/
-    // {
-    //   icon: 'sourceAIcon',
-    //   x: 0.25,
-    //   y: 0.25,
-    //   radius: 0.04,
-    //   alpha: 0.75,
-    //   clickable: true,
-    // },
-    // {
-    //   icon: 'sourceBIcon',
-    //   x: 0.75,
-    //   y: 0.25,
-    //   radius: 0.04,
-    //   alpha: 0.75,
-    //   clickable: true,
-    // },
-    // {
-    //   icon: 'sourceCIcon',
-    //   x: 0.25,
-    //   y: 0.75,
-    //   radius: 0.04,
-    //   alpha: 0.75,
-    //   clickable: true,
-    // },
-  ];
-
-  canvasControl = new CanvasControl(canvas, elements, updatePositions);
-
-  selectRoomProperties();
 };
 
-let addElement = function(id) {
+const enterRoom = () => {
   if (!audioReady) {
     initAudio();
   }
+  
+  let canvas = document.getElementById('canvas');
+  let listener = new SoundSource(
+    'listenerIcon', // image
+    {x: 400, y: 250, z: 1}, // position
+    0, // clock-wise rotation
+    40, // width (relative to max canvas width)
+    40, // height (relative to max canvas height)
+    0.75, // alpha
+    false, // clickable
+    10, // layer (make sure listener is on top)
+    audioContext,
+    audioScene,
+    {
+      'foot-step': new AudioSettings(
+        'resources/sounds/environment related human sounds/single_footstep_boots.wav',
+        AUDIO_SETTING.DEFALUT,
+        200,
+        0
+      ),
+    },
+    true // isListener
+  );
+
+  canvasControl = new CanvasControl(canvas, listener, updatePositions);
   selectRoomProperties();
 
-  audioElements.push(document.createElement('audio'));
-  const newAudioElement = audioElements[audioElements.length - 1];
-  newAudioElement.src = sourceIconIdsAndFile[id]; // todo
-  newAudioElement.crossOrigin = 'anonymous';
-  newAudioElement.load();
-  newAudioElement.loop = true;
-  newAudioElement.play();
-  audioElementSources.push(audioContext.createMediaElementSource(newAudioElement));
+  const newElements = [
+    new Chair({x: 450, y: 100, z: 0.5}, 45, audioContext, audioScene),
+    new Chair({x: 550, y: 100, z: 0.5}, -45, audioContext, audioScene),
+    new Chair({x: 500, y: 30, z: 0.5}, 180, audioContext, audioScene),
+    new SoundSource(
+      'sourceBIcon', // image
+      {x: 200, y: 150, z: 1}, // position
+      0, // clock-wise rotation
+      40, // width (relative to max canvas width)
+      40, // height (relative to max canvas height)
+      0.75, // alpha
+      true, // clickable
+      1,
+      audioContext,
+      audioScene,
+      {
+        'clear-throat': new AudioSettings(
+          'resources/sounds/intrinsic human sounds/male_throat_clear.mp3',
+          AUDIO_SETTING.INTERMITTENT,
+          1000,
+          60000
+        ),
+        'sniffle': new AudioSettings(
+          'resources/sounds/intrinsic human sounds/sniffle.mp3',
+          AUDIO_SETTING.INTERMITTENT,
+          1000,
+          30000
+        ),
+        'page-flip': new AudioSettings(
+          'resources/sounds/work sounds/single_page_flip.mp3',
+          AUDIO_SETTING.INTERMITTENT,
+          1000,
+          30000
+        ),
+        'single-click': new AudioSettings(
+          'resources/sounds/work sounds/single_click.mp3',
+          AUDIO_SETTING.INTERMITTENT,
+          100,
+          5000
+        ),
+        'foot-step': new AudioSettings(
+          'resources/sounds/environment related human sounds/single_footstep_boots.wav',
+          AUDIO_SETTING.DEFAULT,
+          200,
+          0
+        ),
+      }, // audio profile
+    ),
+  ];
+  canvasControl.addElements(newElements);
+}
 
-  soundSources.push(audioScene.createSource());
-  audioElementSources[audioElementSources.length - 1].connect(soundSources[soundSources.length - 1].input);
-  
-  // test connecting another sound to AmbientSonic element
-  //audioElements.push(document.createElement('audio'));
-  //const newAudioElement2 = audioElements[audioElements.length - 1];
-  //newAudioElement2.src = 'resources/sounds/speech-sample.wav'; // todo
-  //newAudioElement2.crossOrigin = 'anonymous';
-  //newAudioElement2.load();
-  //newAudioElement2.loop = true;
-  //newAudioElement2.play();
-  //audioElementSources.push(audioContext.createMediaElementSource(newAudioElement2));
-  //const testNode = audioContext.createMediaElementSource(newAudioElement2);
-
-  //soundSources.push(audioScene.createSource());
-  //testNode.connect(soundSources[soundSources.length - 1].input);
-
-  canvasControl.addElement({
-      icon: id,
-      x: 0.1,
-      y: 0.1,
-      radius: 0.04,
-      alpha: 0.75,
-      clickable: true,
-  });
-};
+class Chair extends SoundSource {
+  constructor(position, rotation, audioContext, audioScene) {
+    super(
+      'sourceDIcon',
+      position,
+      rotation,
+      60,
+      60,
+      1,
+      true,
+      1,
+      audioContext,
+      audioScene,
+      {
+        'chair-slide': new AudioSettings(
+          'resources/sounds/environment related human sounds/chair_slide.mp3',
+          AUDIO_SETTING.DEFAULT,
+        ),
+        'moving-creak': new AudioSettings(
+          'resources/sounds/environment related human sounds/moving_creak.wav',
+          AUDIO_SETTING.DEFAULT,
+        ),
+        'sitting-creak': new AudioSettings(
+          'resources/sounds/environment related human sounds/sitting_creak.wav',
+          AUDIO_SETTING.DEFAULT,
+        ),
+      },
+    );
+  }
+}
 
 window.addEventListener('load', onLoad);
 
 for (const id in sourceIconIdsAndFile) {
   document.querySelector('#' + id).addEventListener('click', () => {addElement(id);});
 }
+
+document.querySelector('#enter-room-btn').onclick = enterRoom;
 
