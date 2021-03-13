@@ -13,3 +13,10 @@ AUDIO_SETTING = {
 }
 
 ROOM_DEPTH = 3; // meters
+
+COLORS = {
+
+}
+
+PRIMARY_FONT = 'Lato';
+PERSON_ICON_TEXT_COLOR = '#fff';

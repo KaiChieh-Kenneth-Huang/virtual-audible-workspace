@@ -11,6 +11,7 @@ let sourceIconIdsAndFile = {
   sourceCIcon: 'resources/sounds/music.wav',
   sourceDIcon: 'resources/sounds/speech-sample.wav',
 };
+// todo: programically add icons new element not put into DOM
 let dimensions = {
   small: {
     width: 1.5, height: 2.4, depth: 1.3,
@@ -142,12 +143,13 @@ const enterRoom = () => {
   
   let canvas = document.getElementById('canvas');
   let listener = new SoundSource(
-    'listenerIcon', // image
+    new PersonIcon('#666', '#3a3', 'ME'), // image
+    true, // is person
     {x: 400, y: 250, z: 1}, // position
     0, // clock-wise rotation
     40, // width (relative to max canvas width)
     40, // height (relative to max canvas height)
-    0.75, // alpha
+    0.9, // alpha
     false, // clickable
     10, // layer (make sure listener is on top)
     audioContext,
@@ -171,7 +173,8 @@ const enterRoom = () => {
     new Chair({x: 550, y: 100, z: 0.5}, -45, audioContext, audioScene),
     new Chair({x: 500, y: 30, z: 0.5}, 180, audioContext, audioScene),
     new SoundSource(
-      'sourceBIcon', // image
+      new PersonIcon('#666', '#a88', 'JD'), // image
+      true, // is person
       {x: 200, y: 150, z: 1}, // position
       0, // clock-wise rotation
       40, // width (relative to max canvas width)
@@ -182,6 +185,48 @@ const enterRoom = () => {
       audioContext,
       audioScene,
       {
+        'working-sounds': new AudioGroup(
+          [
+            new AudioGroupWrapper(
+              'fast-type-1', // name
+              new AudioSettings(
+                'resources/sounds/work sounds/fast_typ1.mp3',
+                AUDIO_SETTING.PARTIAL_PLAY,
+                500,
+                1000,
+                500,
+                1000
+              ), // settings
+              10, // relative frequency
+              5000, // duration
+              5000, // random additional duration
+            ),
+            new AudioGroupWrapper(
+              'page-flip', // name
+              new AudioSettings(
+                'resources/sounds/work sounds/single_page_flip.mp3',
+                AUDIO_SETTING.DEFAULT,
+              ), // settings
+              1, // relative frequency
+              2000, // duration
+              0, // random additional duration
+            ),
+            new AudioGroupWrapper(
+              'single-click', // name
+              new AudioSettings(
+                'resources/sounds/work sounds/single_click.mp3',
+                AUDIO_SETTING.INTERMITTENT,
+                100,
+                5000
+              ), // settings
+              5, // relative frequency
+              100, // duration
+              5000, // random additional duration
+            ),
+          ],
+          1000, // switch task pause duration
+          2000 // random additional task switch pause
+        ),
         'clear-throat': new AudioSettings(
           'resources/sounds/intrinsic human sounds/male_throat_clear.mp3',
           AUDIO_SETTING.INTERMITTENT,
@@ -193,18 +238,6 @@ const enterRoom = () => {
           AUDIO_SETTING.INTERMITTENT,
           1000,
           30000
-        ),
-        'page-flip': new AudioSettings(
-          'resources/sounds/work sounds/single_page_flip.mp3',
-          AUDIO_SETTING.INTERMITTENT,
-          1000,
-          30000
-        ),
-        'single-click': new AudioSettings(
-          'resources/sounds/work sounds/single_click.mp3',
-          AUDIO_SETTING.INTERMITTENT,
-          100,
-          5000
         ),
         'foot-step': new AudioSettings(
           'resources/sounds/environment related human sounds/single_footstep_boots.wav',
@@ -221,7 +254,8 @@ const enterRoom = () => {
 class Chair extends SoundSource {
   constructor(position, rotation, audioContext, audioScene) {
     super(
-      'sourceDIcon',
+      icons['chair'],
+      false, // is person
       position,
       rotation,
       60,
@@ -250,10 +284,5 @@ class Chair extends SoundSource {
 }
 
 window.addEventListener('load', onLoad);
-
-for (const id in sourceIconIdsAndFile) {
-  document.querySelector('#' + id).addEventListener('click', () => {addElement(id);});
-}
-
 document.querySelector('#enter-room-btn').onclick = enterRoom;
 

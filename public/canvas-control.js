@@ -94,24 +94,72 @@ CanvasControl.prototype.draw = function() {
   this._context.strokeRect(0, 0, this._canvas.width, this._canvas.height);
 
   for (let i = 0; i < this._elements.length; i++) {
-    const icon = document.getElementById(this._elements[i].icon);
-    const width = this._elements[i].width * this._canvas.width / MAX_CANVAS_WIDTH;
-    const height = this._elements[i].height * this._canvas.height / MAX_CANVAS_HEIGHT;
-    if (icon !== undefined) {
+    const icon = this._elements[i].icon;
+    const isPerson = this._elements[i].isPerson;
+
+    if (icon) {
+      const width = this._elements[i].width * this._canvas.width / MAX_CANVAS_WIDTH;
+      const height = this._elements[i].height * this._canvas.height / MAX_CANVAS_HEIGHT;
       const xCenter = this._elements[i].position.x / MAX_CANVAS_WIDTH * this._canvas.width;
       const yCenter = this._elements[i].position.y / MAX_CANVAS_HEIGHT * this._canvas.height;
-      const x = xCenter - width / 2;
-      const y = yCenter - height / 2;
       this._context.globalAlpha = this._elements[i].alpha;
-
       // Matrix transformation
       this._context.translate(xCenter, yCenter);
       this._context.rotate(this._elements[i].rotation * Math.PI / 180);
 
-      this._context.drawImage(
-        icon, -width / 2, -height / 2,  width, height
-      );
+      if (isPerson) {
+        const outline = new Path2D();
+        const fill = new Path2D();
+        const radius = (width + height) / 4;
+        const text = icon.text;
+        const maxTextWidth = radius * 1;
+        let fontSize = Math.floor(maxTextWidth);
+        const oriLineWidth = this._context.lineWidth;
+        const oriStrokeStyle = this._context.strokeStyle;
+        const oriFillStyle = this._context.fillStyle;
+        const oriFont = this._context.font;
+        const oriTextAlign = this._context.textAlign;
+        const oriTextBaseline = this._context.textBaseline;
 
+        // draw person icon
+        this._context.lineWidth = radius * 0.1;
+        this._context.strokeStyle = icon.outlineColor;
+        this._context.fillStyle = icon.fillColor;
+
+        fill.arc(0, 0, radius, 0, 2 * Math.PI);
+        outline.arc(0, 0, radius, 0, 2 * Math.PI);
+        
+        this._context.fill(fill);
+        this._context.stroke(outline);
+
+        // draw text
+        // text width check
+        this._context.font = 'bold ' + fontSize + 'px ' + PRIMARY_FONT;
+        const oriTextWidth = this._context.measureText(text).width;
+        if (oriTextWidth > maxTextWidth) {
+          fontSize = Math.floor(fontSize * maxTextWidth / oriTextWidth);
+          this._context.font = 'bold ' + fontSize + 'px ' + PRIMARY_FONT;
+        }
+        this._context.globalAlpha = 1;
+        this._context.fillStyle = PERSON_ICON_TEXT_COLOR;
+        this._context.textAlign = 'center';
+        this._context.textBaseline = 'middle';
+        this._context.fillText(text, 0, 0);
+
+        this._context.lineWidth = oriLineWidth;
+        this._context.strokeStyle = oriStrokeStyle;
+        this._context.fillStyle = oriFillStyle;
+
+        this._context.font = oriFont;
+        this._context.textAlign = oriTextAlign;
+        this._context.textBaseline = oriTextBaseline;
+      } else {
+        this._context.drawImage(
+          icon, -width / 2, -height / 2,  width, height
+        );
+      }
+      
+      // rotate back
       this._context.rotate(-this._elements[i].rotation * Math.PI / 180);
       this._context.translate(-xCenter, -yCenter);
     }
