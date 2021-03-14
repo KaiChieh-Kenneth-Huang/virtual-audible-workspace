@@ -242,8 +242,8 @@ class SoundSource extends CanvasElement {
     const playSoundIntermittently = () => {
       const pauseLength = this.audioElements[key].audioSettings.pauseDuration + Math.random() * this.audioElements[key].audioSettings.randAdditionalPause;
       setTimeout(() => {
-        this.playSound(key);
         if (this.audioElements[key].audioSettings.isPlaying) {
+          this.playSound(key);
           playSoundIntermittently();
         }
       }, pauseLength);
@@ -255,6 +255,7 @@ class SoundSource extends CanvasElement {
 
   pauseIntermittentSound(key) {
     this.audioElements[key].audioSettings.pause();
+    this.pauseSound(key);
   }
 
   playPartialSound(key) {
@@ -264,13 +265,15 @@ class SoundSource extends CanvasElement {
       const audioLength = this.getAudioDuration(key) || 0;
 
       setTimeout(() => {
-        this.playSound(key, true, audioLength * Math.random()); // randomize start audio location
-        setTimeout(() => {
-          this.pauseSound(key);
-          if (this.audioElements[key].audioSettings.playDuration && this.audioElements[key].audioSettings.isPlaying) {
-            playPartialSoundIntermittently();
-          }
-        }, playLength);
+        if (this.audioElements[key].audioSettings.playDuration && this.audioElements[key].audioSettings.isPlaying) {
+          this.playSound(key, true, audioLength * Math.random()); // randomize start audio location
+          setTimeout(() => {
+            this.pauseSound(key);
+            if (this.audioElements[key].audioSettings.playDuration && this.audioElements[key].audioSettings.isPlaying) {
+              playPartialSoundIntermittently();
+            }
+          }, playLength);
+        }
       }, pauseLength);
     }
 
@@ -280,14 +283,16 @@ class SoundSource extends CanvasElement {
 
   pausePartialSound (key) {
     this.audioElements[key].audioSettings.pause();
+    this.pauseSound(key);
   }
 }
 
 class Person extends SoundSource {
-  constructor(state, icon, position, audioContext, audioScene, audioProfile, isListener) {
+  constructor(state, icon, position, audioContext, audioScene, audioProfile, habbits, isListener) {
     const alpha = isListener ? 1 : 0.7;
     const layer = isListener ? 11 : 10;
     super(state, icon, position, 0, 50, 50, alpha, false, layer, audioContext, audioScene, audioProfile, isListener);
+    this.habbits = habbits;
     this.itemInUse = null;
   }
 
@@ -322,13 +327,23 @@ class Chair extends SoundSource {
       audioContext,
       audioScene,
       {
-        [SOUND_NAME.CHAIR_SLIDE]: new AudioSettings(
+        [SOUND_NAME.CHAIR_SLIDE_QUICK]: new AudioSettings(
           'resources/sounds/environment related human sounds/chair_slide.mp3',
           AUDIO_SETTING.DEFAULT,
         ),
-        'moving-creak': new AudioSettings(
-          'resources/sounds/environment related human sounds/moving_creak.wav',
+        [SOUND_NAME.CHAIR_SLIDE_SLOW]: new AudioSettings(
+          'resources/sounds/environment related human sounds/chair_slide.mp3',
           AUDIO_SETTING.DEFAULT,
+        ),
+        [SOUND_NAME.CHAIR_SLIDE_SLOW_SQUEAKY]: new AudioSettings(
+          'resources/sounds/environment related human sounds/chair_slide.mp3',
+          AUDIO_SETTING.DEFAULT,
+        ),
+        [SOUND_NAME.CHAIR_MOVING_CREAK]: new AudioSettings(
+          'resources/sounds/environment related human sounds/moving_creak.wav',
+          AUDIO_SETTING.INTERMITTENT,
+          5000,
+          200000
         ),
         'sitting-creak': new AudioSettings(
           'resources/sounds/environment related human sounds/sitting_creak.wav',
@@ -336,6 +351,8 @@ class Chair extends SoundSource {
         ),
       },
     );
+    this.selectedSlideSound = SOUND_NAME.CHAIR_SLIDE_QUICK; // set a sound as default in case none was selected
+    this.movingCreakEnabled = false;
   }
 
   get stateChangeDelay() {
@@ -344,14 +361,31 @@ class Chair extends SoundSource {
 
   _endPrevState(state, prevState) {
     if (prevState === ELEMENT_STATE.IN_USE) {
-      this.play(SOUND_NAME.CHAIR_SLIDE);
+      this.play(SOUND_NAME.CHAIR_SLIDE_QUICK);
+      if (this.movingCreakEnabled) {
+        this.movingCreakEnabled = false;
+        this.pause(SOUND_NAME.CHAIR_MOVING_CREAK);
+      }
     }
   }
 
   _initState(state, prevState) {
     if (state === ELEMENT_STATE.IN_USE) {
-      this.play(SOUND_NAME.CHAIR_SLIDE);
+      this.play(SOUND_NAME.CHAIR_SLIDE_QUICK);
+      this.alpha = 1;
+      this.clickable = false;
+    } else if (state === ELEMENT_STATE.RESERVED) {
+      this.alpha = 0.5;
+      this.clickable = false;
+    } else if (state === ELEMENT_STATE.AVAILABLE) {
+      this.alpha = 1;
+      this.clickable = true;
     }
+  }
+
+  enableMovingCreak() {
+    this.movingCreakEnabled = true;
+    this.play(SOUND_NAME.CHAIR_MOVING_CREAK);
   }
 }
 
@@ -363,8 +397,8 @@ class AudioContextAndScene {
   }
   
   // methods for adding elements to room
-  getNewPerson(state, icon, position, audioProfile, isListener) {
-    return new Person(state, icon, position, this.audioContext, this.audioScene, audioProfile, isListener);
+  getNewPerson(state, icon, position, audioProfile, habbits, isListener) {
+    return new Person(state, icon, position, this.audioContext, this.audioScene, audioProfile, habbits, isListener);
   }
 
   getNewChair(state, position, rotation) {

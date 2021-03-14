@@ -59,7 +59,13 @@ ELEMENT_STATE = {
 
 SOUND_NAME = {
   FOOT_STEP: 'foot-step',
-  CHAIR_SLIDE: 'chair-slide',
+  CHAIR_SLIDE_QUICK: 'chair-slide-quick',
+  CHAIR_SLIDE_SLOW: 'chair-slide-slow',
+  CHAIR_SLIDE_SLOW_SQUEAKY: 'chair-slide-slow-squeaky',
+  CHAIR_MOVING_CREAK: 'chair-moving-creak',
+  BAG_ZIP: 'bag-zip',
+  DOOR_GENTLE: 'door-gentle',
+  DOOR_HARSH: 'door-harsh'
 }
 
 SOUND_GROUP_NAME = {

@@ -80,13 +80,19 @@ const enterRoom = () => {
     ELEMENT_STATE.IDLE,
     new PersonIcon('#666', '#3a3', 'ME'), // image
     {x: 400, y: 250, z: 1}, // position
-    {
+    { // sound profile
       [SOUND_NAME.FOOT_STEP]: new AudioSettings(
         'resources/sounds/environment related human sounds/single_footstep_boots.wav',
         AUDIO_SETTING.INTERMITTENT,
         600,
         0
       ),
+    },
+    { // habbits
+      chairSlideSound: SOUND_NAME.CHAIR_SLIDE_QUICK,
+      doorOpenCloseSound: SOUND_NAME.DOOR_GENTLE,
+      moveOnChair: true,
+      zipBag: true
     },
     true // isListener
   );

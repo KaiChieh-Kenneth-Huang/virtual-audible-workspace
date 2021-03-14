@@ -155,7 +155,6 @@ CanvasControl.prototype.draw = function() {
           icon, -width / 2, -height / 2,  width, height
         );
       }
-      
       // rotate back
       this._context.rotate(-this._elements[i].rotation * Math.PI / 180);
       this._context.translate(-xCenter, -yCenter);
@@ -273,6 +272,9 @@ CanvasControl.prototype._cursorUpFunc = function(event) {
           this.listener.position.y = nearestElement.position.y;
           //this.listener.pause(SOUND_NAME.FOOT_STEP);
           this.listener.setState(ELEMENT_STATE.WORKING);
+          if (this.listener.habbits.moveOnChair) {
+            nearestElement.enableMovingCreak();
+          }
           nearestElement.setState(ELEMENT_STATE.IN_USE);
           //nearestElement.play('chair-slide');
           clearInterval(moveInterval);
