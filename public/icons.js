@@ -5,6 +5,7 @@ const iconList = [
     ['chair', 'resources/img/chair.svg'],
     ['round-table', 'resources/img/round table.svg'],
     ['square-table', 'resources/img/square table.svg'],
+    ['door', 'resources/img/door.svg']
 ];
 
 const icons = {};

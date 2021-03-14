@@ -1,4 +1,5 @@
 /* This is a testing code */
-// load font
-const fontPreload = document.createElement('div');
-fontPreload.style = 'font-family: ' + PRIMARY_FONT;
+// helper functions
+function chooseOneRandomlyFromList(list) {
+    return list[Math.floor(Math.random() * list.length)];
+}

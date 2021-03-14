@@ -239,47 +239,57 @@ CanvasControl.prototype._cursorMoveFunc = function(event) {
 
 CanvasControl.prototype._cursorUpFunc = function(event) {
   let cursorPosition = this.getCursorPosition(event);
-  let nearestElement = this.getNearestElement(cursorPosition);
+  let selectedElement = this.getNearestElement(cursorPosition);
   
   const moveStepSize = 1;
 
   
 
-  if (nearestElement) {
+  if (selectedElement) {
+    // useElement called when the person reaches selectedElement
+    const useElement = (selectedElement) => {
+      if (selectedElement.constructor.name === 'Chair') {
+        this.listener.setState(ELEMENT_STATE.WORKING);
+        if (this.listener.habbits.moveOnChair) {
+          selectedElement.enableMovingCreak();
+        }
+        if (this.listener.habbits.chairSlideSound) {
+          selectedElement.selectedSlideSound = this.listener.habbits.chairSlideSound;
+        }
+        
+        selectedElement.setState(ELEMENT_STATE.IN_USE);
+      } else if (selectedElement.constructor.name === 'Door') {
+        this.listener.setState(ELEMENT_STATE.IDLE);
+        selectedElement.selectedDoorSound = this.listener.habbits.doorOpenCloseSound;
+        selectedElement.setState(ELEMENT_STATE.IN_USE);
+      }
+    }
+    
     const startMoving = () => {
-      //this.listener.play(SOUND_NAME.FOOT_STEP);
       this.listener.setState(ELEMENT_STATE.WALKING);
       let moveInterval = setInterval(() => {
-        if (nearestElement !== this.listener.itemInUse) { // user choses anther target while walking
+        if (selectedElement !== this.listener.itemInUse) { // user choses anther target while walking
           clearInterval(moveInterval);
           return;
         }
 
-        if (Math.abs(nearestElement.position.x - this.listener.position.x) > moveStepSize) {
-          if (nearestElement.position.x > this.listener.position.x) {
+        if (Math.abs(selectedElement.position.x - this.listener.position.x) > moveStepSize) {
+          if (selectedElement.position.x > this.listener.position.x) {
             this.listener.position.x += moveStepSize;
           } else {
             this.listener.position.x -= moveStepSize;
           }
-        } else if (Math.abs(nearestElement.position.y - this.listener.position.y) > moveStepSize) {
-          if (nearestElement.position.y > this.listener.position.y) {
+        } else if (Math.abs(selectedElement.position.y - this.listener.position.y) > moveStepSize) {
+          if (selectedElement.position.y > this.listener.position.y) {
             this.listener.position.y += moveStepSize;
           } else {
             this.listener.position.y -= moveStepSize;
           }
-        } else {
-          this.listener.position.x = nearestElement.position.x;
-          this.listener.position.y = nearestElement.position.y;
-          //this.listener.pause(SOUND_NAME.FOOT_STEP);
-          this.listener.setState(ELEMENT_STATE.WORKING);
-          if (this.listener.habbits.moveOnChair) {
-            nearestElement.enableMovingCreak();
-          }
-          if (this.listener.habbits.chairSlideSound) {
-            nearestElement.selectedSlideSound = this.listener.habbits.chairSlideSound;
-          }
+        } else { // reaches destination
+          this.listener.position.x = selectedElement.position.x;
+          this.listener.position.y = selectedElement.position.y;
+          useElement(selectedElement);
           
-          nearestElement.setState(ELEMENT_STATE.IN_USE);
           clearInterval(moveInterval);
         }
         this.invokeCallback();
@@ -288,16 +298,27 @@ CanvasControl.prototype._cursorUpFunc = function(event) {
       }, 20);
     }
 
-    let actionDelay = 0;
-    if(this.listener.itemInUse) {
-      actionDelay = this.listener.itemInUse.stateChangeDelay;
-      this.listener.itemInUse.setState(ELEMENT_STATE.AVAILABLE);
+    const selectElement = (selectedElement) => {
+      let actionDelay = 0;
+      if(this.listener.itemInUse) {
+        if (this.listener.itemInUse.constructor.name === 'Chair') {
+          actionDelay = this.listener.itemInUse.stateChangeDelay;
+          this.listener.itemInUse.setState(ELEMENT_STATE.AVAILABLE);
+        }
+      }
+      if (selectedElement.constructor.name === 'Chair') {
+        selectedElement.setState(ELEMENT_STATE.RESERVED);
+        this.listener.itemInUse = selectedElement;
+      } else if (selectedElement.constructor.name === 'Door') {
+        // don't need to do anything
+        this.listener.itemInUse = selectedElement;
+      }
+      setTimeout(() => {
+        startMoving();
+      }, actionDelay);
     }
-    nearestElement.setState(ELEMENT_STATE.RESERVED);
-    this.listener.itemInUse = nearestElement;
-    setTimeout(() => {
-      startMoving();
-    }, actionDelay);
+
+    selectElement(selectedElement);
   }
 };
 

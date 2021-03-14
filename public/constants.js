@@ -3,8 +3,16 @@ const SOUND_SRCS = {
   mySound: SOUNDS_PATH + 'fileName.wav',
 }
 
-MAX_CANVAS_WIDTH = 800;
-MAX_CANVAS_HEIGHT = 500;
+MAX_CANVAS_WIDTH = 1600;
+MAX_CANVAS_HEIGHT = 1000;
+
+DOOR_WIDTH = 20;
+DOOR_HEIGHT = 100;
+
+CHAIR_WIDTH = 120;
+CHAIR_HEIGHT = 120;
+
+PERSON_SIZE = 60;
 
 ROOM_DIMENSIONS = {
   width: 20, height: 3, depth: 10,
@@ -53,8 +61,9 @@ ELEMENT_STATE = {
   RESERVED: 1,
   AVAILABLE: 2,
   WALKING: 3,
-  WORKING: 4,
-  IDLE: 5
+  PREPARING: 4,
+  WORKING: 5,
+  IDLE: 6
 }
 
 SOUND_NAME = {
@@ -65,7 +74,10 @@ SOUND_NAME = {
   CHAIR_MOVING_CREAK: 'chair-moving-creak',
   BAG_ZIP: 'bag-zip',
   DOOR_GENTLE: 'door-gentle',
-  DOOR_HARSH: 'door-harsh'
+  DOOR_SLAM: 'door-slam',
+  DOOR_NO_SQUEAK: 'door-no-squeak',
+  DOOR_SQUEAK_1: 'door-squeak-1',
+  DOOR_SQUEAK_2: 'door-squeak-2',
 }
 
 SOUND_GROUP_NAME = {

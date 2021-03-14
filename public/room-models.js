@@ -90,7 +90,7 @@ const enterRoom = () => {
     },
     { // habbits
       chairSlideSound: SOUND_NAME.CHAIR_SLIDE_SLOW,
-      doorOpenCloseSound: SOUND_NAME.DOOR_GENTLE,
+      doorOpenCloseSound: SOUND_NAME.DOOR_SLAM,
       moveOnChair: true,
       zipBag: true
     },
@@ -100,9 +100,10 @@ const enterRoom = () => {
   canvasControl = new CanvasControl(canvas, listener, updatePositions);
 
   const newElements = [
-    audioContextAndScene.getNewChair(ELEMENT_STATE.AVAILABLE, {x: 450, y: 100, z: 0.5}, 45),
-    audioContextAndScene.getNewChair(ELEMENT_STATE.AVAILABLE, {x: 550, y: 100, z: 0.5}, -45),
+    audioContextAndScene.getNewChair(ELEMENT_STATE.AVAILABLE, {x: 450, y: 200, z: 0.5}, 45),
+    audioContextAndScene.getNewChair(ELEMENT_STATE.AVAILABLE, {x: 550, y: 200, z: 0.5}, -45),
     audioContextAndScene.getNewChair(ELEMENT_STATE.AVAILABLE, {x: 500, y: 30, z: 0.5}, 180),
+    audioContextAndScene.getNewDoor(ELEMENT_STATE.AVAILABLE, {x: DOOR_WIDTH / 2 , y: MAX_CANVAS_HEIGHT / 3, z: 1}, 0),
     audioContextAndScene.getNewPerson(
       ELEMENT_STATE.WORKING,
       new PersonIcon('#666', '#a88', 'JD'), // image

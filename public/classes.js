@@ -193,6 +193,7 @@ class SoundSource extends CanvasElement {
   }
 
   getAudioDuration(key) {
+    console.log(this.audioElements[key].buffer.duration);
     return this.audioElements[key].buffer.duration;
   }
 
@@ -298,7 +299,7 @@ class Person extends SoundSource {
   constructor(state, icon, position, audioContext, audioScene, audioProfile, habbits, isListener) {
     const alpha = isListener ? 1 : 0.7;
     const layer = isListener ? 11 : 10;
-    super(state, icon, position, 0, 50, 50, alpha, false, layer, audioContext, audioScene, audioProfile, isListener);
+    super(state, icon, position, 0, PERSON_SIZE, PERSON_SIZE, alpha, false, layer, audioContext, audioScene, audioProfile, isListener);
     this.habbits = habbits;
     this.itemInUse = null;
   }
@@ -326,8 +327,8 @@ class Chair extends SoundSource {
       icons['chair'],
       position,
       rotation,
-      60,
-      60,
+      CHAIR_WIDTH,
+      CHAIR_HEIGHT,
       1,
       true,
       1,
@@ -335,15 +336,15 @@ class Chair extends SoundSource {
       audioScene,
       {
         [SOUND_NAME.CHAIR_SLIDE_QUICK]: new AudioSettings(
-          'resources/sounds/environment related human sounds/chair_slide.mp3',
+          'resources/sounds/environment related human sounds/chair_slide_quick.mp3',
           AUDIO_SETTING.DEFAULT,
         ),
         [SOUND_NAME.CHAIR_SLIDE_SLOW]: new AudioSettings(
-          'resources/sounds/environment related human sounds/chair_slide2.mp3',
+          'resources/sounds/environment related human sounds/chair_slide_slow.mp3',
           AUDIO_SETTING.DEFAULT,
         ),
         [SOUND_NAME.CHAIR_SLIDE_SLOW_SQUEAKY]: new AudioSettings(
-          'resources/sounds/environment related human sounds/chair_slide.mp3',
+          'resources/sounds/environment related human sounds/chair_slide_slow_squeaky.mp3',
           AUDIO_SETTING.DEFAULT,
         ),
         [SOUND_NAME.CHAIR_MOVING_CREAK]: new AudioSettings(
@@ -396,6 +397,67 @@ class Chair extends SoundSource {
   }
 }
 
+class Door extends SoundSource {
+  constructor(state, position, rotation, audioContext, audioScene) {
+    super(
+      state,
+      icons['door'],
+      position,
+      rotation,
+      DOOR_WIDTH,
+      DOOR_HEIGHT,
+      1,
+      true,
+      1,
+      audioContext,
+      audioScene,
+      {
+        [SOUND_NAME.DOOR_GENTLE]: new AudioSettings(
+          'resources/sounds/environment related human sounds/door_gentle.mp3',
+          AUDIO_SETTING.DEFAULT,
+        ),
+        [SOUND_NAME.DOOR_SLAM]: new AudioSettings(
+          'resources/sounds/environment related human sounds/door_slam.mp3',
+          AUDIO_SETTING.DEFAULT,
+        ),
+        [SOUND_NAME.DOOR_NO_SQUEAK]: new AudioSettings(
+          'resources/sounds/environment related human sounds/door_no_squeak.mp3',
+          AUDIO_SETTING.DEFAULT,
+        ),
+        [SOUND_NAME.DOOR_SQUEAK_1]: new AudioSettings(
+          'resources/sounds/environment related human sounds/door_squeak_1.mp3',
+          AUDIO_SETTING.DEFAULT,
+        ),
+        [SOUND_NAME.DOOR_SQUEAK_2]: new AudioSettings(
+          'resources/sounds/environment related human sounds/door_squeak_2.mp3',
+          AUDIO_SETTING.DEFAULT,
+        ),
+      },
+    );
+    this.selectedDoorSound = SOUND_NAME.DOOR_GENTLE; // set a sound as default in case none was selected
+  }
+
+  _endPrevState(state, prevState) {
+  }
+
+  _initState(state, prevState) {
+    if (state === ELEMENT_STATE.IN_USE) {
+      const doorTurnSound = chooseOneRandomlyFromList([
+        SOUND_NAME.DOOR_NO_SQUEAK,
+        SOUND_NAME.DOOR_SQUEAK_1,
+        SOUND_NAME.DOOR_SQUEAK_2
+      ]);
+      this.play(doorTurnSound);
+      setTimeout(() => {
+        this.play(this.selectedDoorSound);
+        setTimeout(() => {
+          this.setState(ELEMENT_STATE.AVAILABLE);
+        }, this.getAudioDuration(this.selectedDoorSound) * 1000);
+      }, this.getAudioDuration(doorTurnSound) * 1000);
+    }
+  }
+}
+
 // utility class for creating new elements
 class AudioContextAndScene {
   constructor(audioContext, audioScene) {
@@ -410,5 +472,9 @@ class AudioContextAndScene {
 
   getNewChair(state, position, rotation) {
     return new Chair(state, position, rotation, this.audioContext, this.audioScene);
+  }
+
+  getNewDoor(state, position, rotation) {
+    return new Door(state, position, rotation, this.audioContext, this.audioScene);
   }
 }
