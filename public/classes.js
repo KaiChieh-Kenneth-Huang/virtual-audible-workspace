@@ -193,7 +193,6 @@ class SoundSource extends CanvasElement {
   }
 
   getAudioDuration(key) {
-    console.log(this.audioElements[key].buffer.duration);
     return this.audioElements[key].buffer.duration;
   }
 
@@ -353,7 +352,7 @@ class Chair extends SoundSource {
           5000,
           200000
         ),
-        'sitting-creak': new AudioSettings(
+        [SOUND_NAME.CHAIR_SITTING_CREAK]: new AudioSettings(
           'resources/sounds/environment related human sounds/sitting_creak.wav',
           AUDIO_SETTING.DEFAULT,
         ),
@@ -379,9 +378,16 @@ class Chair extends SoundSource {
 
   _initState(state, prevState) {
     if (state === ELEMENT_STATE.IN_USE) {
+      const sittingCreakSound =  chooseOneRandomlyFromList([null, SOUND_NAME.CHAIR_SITTING_CREAK]);
       this.play(this.selectedSlideSound);
       this.alpha = 1;
       this.clickable = false;
+      console.log(sittingCreakSound)
+      if (sittingCreakSound) {
+        setTimeout(() => {
+          this.play(sittingCreakSound);
+        }, this.getAudioDuration(this.selectedSlideSound) * 1000 + 750);
+      }
     } else if (state === ELEMENT_STATE.RESERVED) {
       this.alpha = 0.5;
       this.clickable = false;
