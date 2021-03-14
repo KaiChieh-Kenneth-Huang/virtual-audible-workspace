@@ -109,14 +109,6 @@ class SoundSource extends CanvasElement {
         const audioSetting = item;
         this.addAudioElement(name, audioSetting);
 
-        if (audioSetting.category === AUDIO_SETTING.INTERMITTENT) { //name, source, category, pauseDuration, randAdditionalPause
-          if (audioSetting.pauseDuration) {
-            //this.play(name);
-          }
-        } else if (audioSetting.category === AUDIO_SETTING.PARTIAL_PLAY) {
-          this.audioElements[name].basic.loop = true;
-          //this.play(name);
-        }
       } else if (item.constructor.name === 'AudioGroup') {
         const audioGroup = item;
         this.addAudioGroup(name, audioGroup);
