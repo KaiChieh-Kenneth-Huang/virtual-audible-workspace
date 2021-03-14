@@ -22,9 +22,6 @@ function CanvasControl(canvas, listener, callbackFunc) {
   this._lastMoveEventTime = 0;
   this._minimumThreshold = 16;
   
-  this._isMoving = false;
-  
-  
   let that = this;
 //   canvas.addEventListener('touchstart', function(event) {
 //     that._cursorDownFunc(event);
@@ -95,7 +92,7 @@ CanvasControl.prototype.draw = function() {
 
   for (let i = 0; i < this._elements.length; i++) {
     const icon = this._elements[i].icon;
-    const isPerson = this._elements[i].isPerson;
+    const isPerson = this._elements[i].constructor.name === 'Person';
 
     if (icon) {
       const width = this._elements[i].width * this._canvas.width / MAX_CANVAS_WIDTH;
@@ -251,9 +248,14 @@ CanvasControl.prototype._cursorUpFunc = function(event) {
 
   if (nearestElement) {
     const startMoving = () => {
-      this.listener.playIntermittentSound('foot-step');
+      //this.listener.play(SOUND_NAME.FOOT_STEP);
+      this.listener.setState(ELEMENT_STATE.WALKING);
       let moveInterval = setInterval(() => {
-        _isMoving = true;
+        if (nearestElement !== this.listener.itemInUse) { // user choses anther target while walking
+          clearInterval(moveInterval);
+          return;
+        }
+
         if (Math.abs(nearestElement.position.x - this.listener.position.x) > moveStepSize) {
           if (nearestElement.position.x > this.listener.position.x) {
             this.listener.position.x += moveStepSize;
@@ -269,10 +271,10 @@ CanvasControl.prototype._cursorUpFunc = function(event) {
         } else {
           this.listener.position.x = nearestElement.position.x;
           this.listener.position.y = nearestElement.position.y;
-          _isMoving = false;
-          this.listener.stopIntermittentSound('foot-step');
-          this.listener.occupiedChair = nearestElement;
-          nearestElement.playSound('chair-slide');
+          //this.listener.pause(SOUND_NAME.FOOT_STEP);
+          this.listener.setState(ELEMENT_STATE.WORKING);
+          nearestElement.setState(ELEMENT_STATE.IN_USE);
+          //nearestElement.play('chair-slide');
           clearInterval(moveInterval);
         }
         this.invokeCallback();
@@ -281,14 +283,16 @@ CanvasControl.prototype._cursorUpFunc = function(event) {
       }, 20);
     }
 
-    if (this.listener.occupiedChair) {
-      this.listener.occupiedChair.playSound('chair-slide');
-      setTimeout(() => {
-        startMoving();
-      }, 1500);
-    } else {
-      startMoving();
+    let actionDelay = 0;
+    if(this.listener.itemInUse) {
+      actionDelay = this.listener.itemInUse.stateChangeDelay;
+      this.listener.itemInUse.setState(ELEMENT_STATE.AVAILABLE);
     }
+    nearestElement.setState(ELEMENT_STATE.RESERVED);
+    this.listener.itemInUse = nearestElement;
+    setTimeout(() => {
+      startMoving();
+    }, actionDelay);
   }
 };
 
