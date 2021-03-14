@@ -41,6 +41,7 @@ class AudioGroup extends AudioPlayControl {
     this.switchPauseDuration = switchPauseDuration;
     this.randAdditionalSwitchPauseDuration = randAdditionalSwitchPauseDuration;
     this.totalFrequency = 0;
+    this.soundPlaying = null;
 
     audioGroupWrappers.forEach((item) => {
       this.totalFrequency += item.relFrequency;
@@ -220,13 +221,16 @@ class SoundSource extends CanvasElement {
       const playLength = (soundToPlay.duration + Math.random() * soundToPlay.randAdditionalDuration);
 
       setTimeout(() => {
-        this.play(soundToPlay.name);
-        setTimeout(() => {
-          this.pause(soundToPlay.name);
-          if (group.isPlaying) {
-            playMemberSound();
-          }
-        }, playLength);
+        if (group.isPlaying) {
+          group.soundPlaying = soundToPlay.name;
+          this.play(soundToPlay.name);
+          setTimeout(() => {
+            this.pause(soundToPlay.name);
+            if (group.isPlaying) {
+              playMemberSound();
+            }
+          }, playLength);
+        }
       }, pauseLength);
     }
 
@@ -236,6 +240,9 @@ class SoundSource extends CanvasElement {
 
   pauseAudioGroup(groupName) {
     this.audioGroups[groupName].pause();
+    if (this.audioGroups[groupName].soundPlaying) {
+      this.pause(this.audioGroups[groupName].soundPlaying);
+    }
   }
 
   playIntermittentSound(key) {
