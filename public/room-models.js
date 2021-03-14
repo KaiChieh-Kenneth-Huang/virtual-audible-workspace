@@ -34,14 +34,12 @@ function updatePositions(elements) {
     return;
   // check element.constructor.name to see if set position needed
   for (const element of elements) {
-    console.log(element.constructor.name)
     // for sounds, coordinates (0, 0, 0) is the center of the room
     // for canvas, coordinates (0, 0, 0) is the top left
     if (element.isSoundSource) {
       let x = (element.position.x - MAX_CANVAS_WIDTH / 2) / MAX_CANVAS_WIDTH * ROOM_DIMENSIONS.width;
       let y = (element.position.z - ROOM_DIMENSIONS.height / 2);
       let z = (element.position.y - MAX_CANVAS_HEIGHT / 2) / MAX_CANVAS_HEIGHT * ROOM_DIMENSIONS.depth;
-      console.log([x, z])
       if (element.isListener) {
         element.audioScene.setListenerPosition(x, y, z);
       }
@@ -86,7 +84,7 @@ const enterRoom = () => {
       [SOUND_NAME.FOOT_STEP]: new AudioSettings(
         'resources/sounds/environment related human sounds/single_footstep_boots.wav',
         AUDIO_SETTING.INTERMITTENT,
-        500,
+        600,
         0
       ),
     },

@@ -81,7 +81,6 @@ class CanvasElement {
 
   setState(state) {
     if (state !== this.state) {
-      console.log(state)
       this._endPrevState(state, this.state);
       this._initState(state, this.state);
       this.state = state;
@@ -127,11 +126,6 @@ class SoundSource extends CanvasElement {
           const audioSetting = item.audioSettings;
           this.addAudioElement(item.name, audioSetting);
         });
-        //console.log(this.audioElements);
-        
-        // play sound group
-        // todo: play only when seated, not here
-        //this.play(name);
       }
     }
 
@@ -143,28 +137,23 @@ class SoundSource extends CanvasElement {
   addAudioGroup(key, group) {
     this.audioGroups[key] = group;
   }
-  // append a sound to the SoundSource object
-  addAudioElement(key, audioSettings) {
-    const src = audioSettings.source;
-    // set up the basic audio element
-    const newAudioElement = document.createElement('audio');
-    newAudioElement.src = src;
-    newAudioElement.crossOrigin = 'anonymous';
-    newAudioElement.load();
-    newAudioElement.loop = false;
-    
-    // create audioContext element
-    const audioContextSrc = this.audioContext.createMediaElementSource(newAudioElement);
 
-    // connect with the ResonanceAudio element
-    audioContextSrc.connect(this.resonanceAudioSrc.input);
-    
-    // store the element and sources
-    this.audioElements[key] = {
-      basic: newAudioElement,
-      audioContext: audioContextSrc,
-      audioSettings: audioSettings
-    }
+  addAudioElement(key, audioSettings) {
+    const audioCtx = this.audioContext;
+    const myRequest = new Request(audioSettings.source);
+  
+    fetch(myRequest).then((response) => {
+      return response.arrayBuffer();
+    }).then((buffer) => {
+      audioCtx.decodeAudioData(buffer, (decodedData) => {
+        // store the buffer for future AudioSource instances
+        this.audioElements[key] = {
+          source: null, // source created when sound is played
+          buffer: decodedData,
+          audioSettings: audioSettings
+        }
+      });
+    });
   }
 
   play(key) {
@@ -174,7 +163,6 @@ class SoundSource extends CanvasElement {
       this.playPartialSound(key);
     } else if (this.audioElements[key] && this.audioElements[key].audioSettings.category === AUDIO_SETTING.DEFAULT) {
       this.playSound(key);
-      console.log(key);
     } else if (this.audioGroups[key]) {
       this.playAudioGroup(key);
     }
@@ -190,20 +178,33 @@ class SoundSource extends CanvasElement {
     }
   }
 
-  playSound(key) {
-    this.audioElements[key].basic.play();
+  playSound(key, loop, startTime) {
+    const newSource = this.audioContext.createBufferSource();
+    if (this.audioElements[key].source) {
+      this.audioElements[key].source.stop();
+    }
+    this.audioElements[key].source = newSource;
+    if (loop !== undefined) {
+      newSource.loop = loop;
+    }
+    newSource.buffer = this.audioElements[key].buffer;
+    newSource.connect(this.resonanceAudioSrc.input);
+    newSource.start(0, startTime);
   }
 
   pauseSound(key) {
-    this.audioElements[key].basic.pause();
+    if (this.audioElements[key].source) {
+      this.audioElements[key].source.stop();
+      this.audioElements[key].source = null;
+    }
   }
 
   getAudioDuration(key) {
-    return this.audioElements[key].basic.duration;
+    return this.audioElements[key].buffer.duration;
   }
 
   setAudioStartTime(key, time) {
-    this.audioElements[key].basic.currentTime = time;
+    this.audioElements[key].basic.loopStart = time;
   }
 
   playAudioGroup(groupName) {
@@ -268,15 +269,10 @@ class SoundSource extends CanvasElement {
     const playPartialSoundIntermittently = () => {
       const pauseLength = this.audioElements[key].audioSettings.pauseDuration + Math.random() * this.audioElements[key].audioSettings.randAdditionalPause;
       const playLength = this.audioElements[key].audioSettings.playDuration + Math.random() * this.audioElements[key].audioSettings.randAdditionalPlay;
-      const audioLength = this.getAudioDuration(key);
-      
-      // randomize start audio location
-      if (audioLength) {
-        this.setAudioStartTime(key, audioLength * Math.random());
-      }
+      const audioLength = this.getAudioDuration(key) || 0;
 
       setTimeout(() => {
-        this.playSound(key);
+        this.playSound(key, true, audioLength * Math.random()); // randomize start audio location
         setTimeout(() => {
           this.pauseSound(key);
           if (this.audioElements[key].audioSettings.playDuration && this.audioElements[key].audioSettings.isPlaying) {

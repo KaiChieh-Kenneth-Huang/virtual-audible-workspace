@@ -167,7 +167,7 @@ CanvasControl.prototype.getCursorPosition = function(event) {
   let cursorX;
   let cursorY;
   let rect = this._canvas.getBoundingClientRect();
-  if (event.touches !== undefined) {
+  if (event.touches && event.touches.length) {
     cursorX = event.touches[0].clientX;
     cursorY = event.touches[0].clientY;
   } else {
