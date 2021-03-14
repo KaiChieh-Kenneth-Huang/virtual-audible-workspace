@@ -87,12 +87,27 @@ const enterRoom = () => {
         600,
         0
       ),
+      [SOUND_NAME.ZIP]: new AudioSettings(
+        'resources/sounds/environment related human sounds/zipping.mp3',
+        AUDIO_SETTING.DEFAULT,
+      ),
+      [SOUND_NAME.UNZIP]: new AudioSettings(
+        'resources/sounds/environment related human sounds/unzipping.mp3',
+        AUDIO_SETTING.DEFAULT,
+      ),
+      [SOUND_NAME.PLACE_BOOK]: new AudioSettings(
+        'resources/sounds/environment related human sounds/place_book.wav',
+        AUDIO_SETTING.DEFAULT,
+      ),
+      [SOUND_NAME.PLACE_LAPTOP]: new AudioSettings(
+        'resources/sounds/environment related human sounds/place_laptop.mp3',
+        AUDIO_SETTING.DEFAULT,
+      ),
     },
     { // habbits
       chairSlideSound: SOUND_NAME.CHAIR_SLIDE_SLOW,
       doorOpenCloseSound: SOUND_NAME.DOOR_SLAM,
       moveOnChair: true,
-      zipBag: true
     },
     true // isListener
   );

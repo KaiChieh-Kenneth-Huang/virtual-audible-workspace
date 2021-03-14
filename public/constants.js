@@ -74,6 +74,8 @@ SOUND_NAME = {
   CHAIR_MOVING_CREAK: 'chair-moving-creak',
   CHAIR_SITTING_CREAK: 'chair-sitting-creak',
   BAG_ZIP: 'bag-zip',
+  PLACE_BOOK: 'place-book',
+  PLACE_LAPTOP: 'place-laptop',
   DOOR_GENTLE: 'door-gentle',
   DOOR_SLAM: 'door-slam',
   DOOR_NO_SQUEAK: 'door-no-squeak',

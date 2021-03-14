@@ -149,6 +149,10 @@ class SoundSource extends CanvasElement {
     });
   }
 
+  hasAudioElement(key) {
+    return !!this.audioElements[key];
+  }
+
   play(key) {
     if (this.audioElements[key] && this.audioElements[key].audioSettings.category === AUDIO_SETTING.INTERMITTENT) {
       this.playIntermittentSound(key);
@@ -314,6 +318,33 @@ class Person extends SoundSource {
   _initState(state, prevState) {
     if (state === ELEMENT_STATE.WALKING) {
       this.play(SOUND_NAME.FOOT_STEP);
+    } else if (state === ELEMENT_STATE.PREPARING) {
+      const timeToSitDown = 3500;
+      setTimeout(() => {
+        let unzipTime = 0;
+        console.log(this.hasAudioElement(SOUND_NAME.UNZIP))
+        if (this.hasAudioElement(SOUND_NAME.UNZIP)) {
+          this.play(SOUND_NAME.UNZIP);
+          unzipTime = this.getAudioDuration(SOUND_NAME.UNZIP) * 1000;
+        }
+        setTimeout(() => {
+          let placeBookTime = 0;
+          if (this.hasAudioElement(SOUND_NAME.PLACE_BOOK)) {
+            this.play(SOUND_NAME.PLACE_BOOK);
+            placeBookTime = this.getAudioDuration(SOUND_NAME.PLACE_BOOK) * 1000;
+          }
+          setTimeout(() => {
+            let placeLaptopTime = 0;
+            if (this.hasAudioElement(SOUND_NAME.PLACE_LAPTOP)) {
+              this.play(SOUND_NAME.PLACE_LAPTOP);
+              placeLaptopTime = this.getAudioDuration(SOUND_NAME.PLACE_LAPTOP) * 1000;
+            }
+            setTimeout(() => {
+              this.setState(ELEMENT_STATE.WORKING);
+            }, placeLaptopTime);
+          }, placeBookTime);
+        }, unzipTime + 750);
+      }, timeToSitDown);
     } else if (state === ELEMENT_STATE.WORKING) {
       this.play(SOUND_GROUP_NAME.WORK);
     } 

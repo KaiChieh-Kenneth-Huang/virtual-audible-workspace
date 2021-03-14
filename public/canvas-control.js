@@ -249,7 +249,7 @@ CanvasControl.prototype._cursorUpFunc = function(event) {
     // useElement called when the person reaches selectedElement
     const useElement = (selectedElement) => {
       if (selectedElement.constructor.name === 'Chair') {
-        this.listener.setState(ELEMENT_STATE.WORKING);
+        this.listener.setState(ELEMENT_STATE.PREPARING);
         if (this.listener.habbits.moveOnChair) {
           selectedElement.enableMovingCreak();
         }
