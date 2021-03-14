@@ -339,7 +339,7 @@ class Chair extends SoundSource {
           AUDIO_SETTING.DEFAULT,
         ),
         [SOUND_NAME.CHAIR_SLIDE_SLOW]: new AudioSettings(
-          'resources/sounds/environment related human sounds/chair_slide.mp3',
+          'resources/sounds/environment related human sounds/chair_slide2.mp3',
           AUDIO_SETTING.DEFAULT,
         ),
         [SOUND_NAME.CHAIR_SLIDE_SLOW_SQUEAKY]: new AudioSettings(
@@ -368,7 +368,7 @@ class Chair extends SoundSource {
 
   _endPrevState(state, prevState) {
     if (prevState === ELEMENT_STATE.IN_USE) {
-      this.play(SOUND_NAME.CHAIR_SLIDE_QUICK);
+      this.play(this.selectedSlideSound);
       if (this.movingCreakEnabled) {
         this.movingCreakEnabled = false;
         this.pause(SOUND_NAME.CHAIR_MOVING_CREAK);
@@ -378,7 +378,7 @@ class Chair extends SoundSource {
 
   _initState(state, prevState) {
     if (state === ELEMENT_STATE.IN_USE) {
-      this.play(SOUND_NAME.CHAIR_SLIDE_QUICK);
+      this.play(this.selectedSlideSound);
       this.alpha = 1;
       this.clickable = false;
     } else if (state === ELEMENT_STATE.RESERVED) {

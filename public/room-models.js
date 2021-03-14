@@ -89,7 +89,7 @@ const enterRoom = () => {
       ),
     },
     { // habbits
-      chairSlideSound: SOUND_NAME.CHAIR_SLIDE_QUICK,
+      chairSlideSound: SOUND_NAME.CHAIR_SLIDE_SLOW,
       doorOpenCloseSound: SOUND_NAME.DOOR_GENTLE,
       moveOnChair: true,
       zipBag: true

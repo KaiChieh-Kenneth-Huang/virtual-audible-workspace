@@ -275,8 +275,11 @@ CanvasControl.prototype._cursorUpFunc = function(event) {
           if (this.listener.habbits.moveOnChair) {
             nearestElement.enableMovingCreak();
           }
+          if (this.listener.habbits.chairSlideSound) {
+            nearestElement.selectedSlideSound = this.listener.habbits.chairSlideSound;
+          }
+          
           nearestElement.setState(ELEMENT_STATE.IN_USE);
-          //nearestElement.play('chair-slide');
           clearInterval(moveInterval);
         }
         this.invokeCallback();
