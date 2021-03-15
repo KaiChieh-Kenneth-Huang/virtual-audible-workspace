@@ -208,9 +208,9 @@ const enterRoom = () => {
     // ),
   ];
   canvasControl.addElements(newElements);
-  setTimeout(() => {
-    canvasControl.useElement(doorElement)
-  }, 500);
+  // setTimeout(() => {
+  //   canvasControl.useElement(doorElement)
+  // }, 500);
 }
 
 const onLoad = function() {

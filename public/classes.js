@@ -446,7 +446,6 @@ class Chair extends SoundSource {
       this.play(this.selectedSlideSound);
       this.alpha = 1;
       this.clickable = false;
-      console.log(sittingCreakSound)
       if (sittingCreakSound) {
         setTimeout(() => {
           this.play(sittingCreakSound);
@@ -637,7 +636,7 @@ class AudioContextAndScene {
       randAdditionalSwitchTaskPause = 100000;
     }
 
-    audioProfile[SOUND_GROUP_NAME.WORK] = new AudioGroup(workSounds);
+    audioProfile[SOUND_GROUP_NAME.WORK] = new AudioGroup(workSounds, switchTaskPause, randAdditionalSwitchTaskPause);
 
     return this.getNewPerson(
       state,
@@ -754,15 +753,17 @@ class AudioContextAndScene {
     // populate chairs with people according to the index given and settings of the person
     if (personSettingsList && personSettingsList.length) {
       for (const personSettings of personSettingsList) {
-        clusterElements.push(
-          this.makeNewPersonWithSettings(
-            ELEMENT_STATE.WORKING,
-            personSettings.icon,
-            {...chairCoordinates[personSettings.locationIndex], z: 1},
-            personSettings.personSettings,
-            personSettings.isListener
-          )
+        const newPerson = this.makeNewPersonWithSettings(
+          ELEMENT_STATE.WORKING,
+          personSettings.icon,
+          {...chairCoordinates[personSettings.locationIndex], z: 1},
+          personSettings.personSettings,
+          personSettings.isListener
         );
+        newPerson.itemInUse = clusterElements[personSettings.locationIndex + 1]; // first one is the table
+        newPerson.itemInUse.state = ELEMENT_STATE.IN_USE;
+        newPerson.itemInUse.clickable = false;
+        clusterElements.push(newPerson);
       }
     }
 

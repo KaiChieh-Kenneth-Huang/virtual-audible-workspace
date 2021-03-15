@@ -243,6 +243,7 @@ CanvasControl.prototype._cursorMoveFunc = function(event) {
   
   if (
     nearestElement
+    && nearestElement.state === ELEMENT_STATE.AVAILABLE
     && this.listener.state !== ELEMENT_STATE.PREPARING_TO_GO
     && this.listener.state !== ELEMENT_STATE.PREPARING_WORK
   ) {
@@ -333,15 +334,25 @@ CanvasControl.prototype._cursorUpFunc = function(event) {
 
     const selectElement = (selectedElement) => {
       let actionDelay = 0;
-      if (this.listener.state === ELEMENT_STATE.WORKING) {
-        this.listener.setState(ELEMENT_STATE.PREPARING_TO_GO);
-      }
       if(this.listener.itemInUse) {
         if (this.listener.itemInUse.constructor.name === 'Chair') {
-          actionDelay += this.listener.itemInUse.stateChangeDelay;
+          const itemInUse = this.listener.itemInUse;
+          const delay = itemInUse.stateChangeDelay;
+          actionDelay += delay;
           actionDelay += this.listener.stateChangeDelay;
-          this.listener.itemInUse.setState(ELEMENT_STATE.AVAILABLE);
+
+          if (itemInUse.state === ELEMENT_STATE.RESERVED) {
+            itemInUse.setState(ELEMENT_STATE.AVAILABLE);
+          } else if (itemInUse.state === ELEMENT_STATE.IN_USE) {
+            setTimeout(() => {
+              console.log(itemInUse);
+              itemInUse.setState(ELEMENT_STATE.AVAILABLE);
+            }, delay);
+          }
         }
+      }
+      if (this.listener.state === ELEMENT_STATE.WORKING) {
+        this.listener.setState(ELEMENT_STATE.PREPARING_TO_GO);
       }
       if (selectedElement.constructor.name === 'Chair') {
         selectedElement.setState(ELEMENT_STATE.RESERVED);
