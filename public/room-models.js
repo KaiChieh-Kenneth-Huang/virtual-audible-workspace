@@ -69,6 +69,8 @@ const enterRoom = () => {
   if (!audioReady) {
     initAudio();
   }
+  document.querySelector('#room-page').style.display = 'block';
+  document.querySelector('#setup-page').style.display = 'none';
 
   audioContextAndScene = new AudioContextAndScene(
     audioContext,
@@ -113,7 +115,7 @@ const enterRoom = () => {
   );
 
   canvasControl = new CanvasControl(canvas, listener, updatePositions);
-
+  const doorElement = audioContextAndScene.getNewDoor(ELEMENT_STATE.AVAILABLE, {...DOOR_LOCATION, z: 1}, 0);
   // setup initial scene
   const newElements = [
     ...audioContextAndScene.getCluster({x: 350, y: 750}, 'round', 3, 0, [
@@ -136,7 +138,7 @@ const enterRoom = () => {
     ...audioContextAndScene.getCluster({x: 1150, y: 750}, 'round', 3, 0),
     ...audioContextAndScene.getCluster({x: 1350, y: 250}, 'square', 2, 90),
 
-    audioContextAndScene.getNewDoor(ELEMENT_STATE.AVAILABLE, {...DOOR_LOCATION, z: 1}, 0),
+    doorElement,
     // audioContextAndScene.getNewPerson(
     //   ELEMENT_STATE.WORKING,
     //   new PersonIcon('#666', '#a88', 'JD'), // image
@@ -206,6 +208,9 @@ const enterRoom = () => {
     // ),
   ];
   canvasControl.addElements(newElements);
+  setTimeout(() => {
+    canvasControl.useElement(doorElement)
+  }, 500);
 }
 
 const onLoad = function() {

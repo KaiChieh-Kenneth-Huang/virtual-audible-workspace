@@ -365,7 +365,6 @@ CanvasControl.prototype._cursorUpFunc = function(event) {
 CanvasControl.prototype._moveElement = function(element, position) {
   
 };
-
 // old methods for reference
 // CanvasControl.prototype._cursorUpdateFunc = function(cursorPosition) {
 //   if (this._selected.index > -1) {
