@@ -93,6 +93,18 @@ class CanvasElement {
   _initState(state, prevState) {}
 
 }
+
+class SquareTable extends CanvasElement {
+  constructor ({x, y, z}, rotation) {
+    super(null, icons['square-table'], {x, y, z}, rotation, TABLE_WIDTH, TABLE_LENGTH, 1, false, 2);
+  }
+}
+
+class RoundTable extends CanvasElement {
+  constructor ({x, y, z}) {
+    super(null, icons['round-table'], {x, y, z}, 0, ROUND_TABLE_SIZE, ROUND_TABLE_SIZE, 1, false, 2);
+  }
+}
 class SoundSource extends CanvasElement {
   constructor (state, icon, position, rotation, width, height, alpha, clickable, layer, audioContext, audioScene, audioProfile, isListener) {
     super(state, icon, position, rotation, width, height, alpha, clickable, layer);
@@ -307,22 +319,27 @@ class Person extends SoundSource {
     this.itemInUse = null;
   }
 
+  get stateChangeDelay() {
+    return this.state === ELEMENT_STATE.WORKING ? this.getZippingDelay() : 0;
+  }
+
   _endPrevState(state, prevState) {
     if (prevState === ELEMENT_STATE.WALKING) {
       this.pause(SOUND_NAME.FOOT_STEP);
     } else if (prevState === ELEMENT_STATE.WORKING) {
       this.pause(SOUND_GROUP_NAME.WORK);
-    } 
+    } else if (prevState === ELEMENT_STATE.PREPARING_WORK) {
+
+    }
   }
 
   _initState(state, prevState) {
     if (state === ELEMENT_STATE.WALKING) {
       this.play(SOUND_NAME.FOOT_STEP);
-    } else if (state === ELEMENT_STATE.PREPARING) {
+    } else if (state === ELEMENT_STATE.PREPARING_WORK) {
       const timeToSitDown = 3500;
       setTimeout(() => {
         let unzipTime = 0;
-        console.log(this.hasAudioElement(SOUND_NAME.UNZIP))
         if (this.hasAudioElement(SOUND_NAME.UNZIP)) {
           this.play(SOUND_NAME.UNZIP);
           unzipTime = this.getAudioDuration(SOUND_NAME.UNZIP) * 1000;
@@ -347,7 +364,23 @@ class Person extends SoundSource {
       }, timeToSitDown);
     } else if (state === ELEMENT_STATE.WORKING) {
       this.play(SOUND_GROUP_NAME.WORK);
+    } else if (state === ELEMENT_STATE.PREPARING_TO_GO) {
+      const itemInUse = this.itemInUse;
+      setTimeout(() => {
+        let zipTime = 0;
+        if (this.hasAudioElement(SOUND_NAME.ZIP)) {
+          this.play(SOUND_NAME.ZIP);
+          zipTime = this.getAudioDuration(SOUND_NAME.ZIP) * 1000;
+        }
+        setTimeout(() => {
+          itemInUse.setState(ELEMENT_STATE.AVAILABLE);
+        }, zipTime + 500);
+      }, 1000)
     } 
+  }
+
+  getZippingDelay() {
+    return this.getAudioDuration(SOUND_NAME.ZIP) * 1000 || 0;
   }
 }
 class Chair extends SoundSource {
@@ -358,7 +391,7 @@ class Chair extends SoundSource {
       position,
       rotation,
       CHAIR_WIDTH,
-      CHAIR_HEIGHT,
+      CHAIR_LENGTH,
       1,
       true,
       1,
@@ -394,7 +427,7 @@ class Chair extends SoundSource {
   }
 
   get stateChangeDelay() {
-    return this.state === ELEMENT_STATE.IN_USE ? 1500 : 0;
+    return this.state === ELEMENT_STATE.IN_USE ? this.getSlidingDelay() + 1500 : 0;
   }
 
   _endPrevState(state, prevState) {
@@ -431,6 +464,10 @@ class Chair extends SoundSource {
   enableMovingCreak() {
     this.movingCreakEnabled = true;
     this.play(SOUND_NAME.CHAIR_MOVING_CREAK);
+  }
+
+  getSlidingDelay() {
+    return this.getAudioDuration(this.selectedSlideSound) * 1000 || 0;
   }
 }
 
@@ -507,11 +544,234 @@ class AudioContextAndScene {
     return new Person(state, icon, position, this.audioContext, this.audioScene, audioProfile, habbits, isListener);
   }
 
+  makeNewPersonWithSettings(
+    state,
+    icon,
+    position,
+    {
+      workSound,
+      otherSound,
+      habbit
+    },
+    isListener
+  ) {
+    const workSounds = [];
+    const audioProfile = {};
+    const habbits = {};
+
+    // create work sounds
+    const workSoundConsts = PERSON_SETTING.WORK_SOUND;
+    if (workSound.type === workSoundConsts.TYPE.fast) {
+      workSounds.push(new AudioGroupWrapper(
+        'type', // name
+        new AudioSettings(
+          SOUND_SRCS.type.fast,
+          AUDIO_SETTING.PARTIAL_PLAY,
+          500,
+          1000,
+          500,
+          1000
+        ), // settings
+        10, // relative frequency
+        5000, // duration
+        5000, // random additional duration
+      ));
+    } else if (workSound.type === workSoundConsts.TYPE.slow) {
+      workSounds.push(new AudioGroupWrapper(
+        'type', // name
+        new AudioSettings(
+          SOUND_SRCS.type.slow,
+          AUDIO_SETTING.PARTIAL_PLAY,
+          500,
+          1000,
+          1000,
+          2000
+        ), // settings
+        10, // relative frequency
+        5000, // duration
+        5000, // random additional duration
+      ));
+    }
+    if (workSound.pageFlip === workSoundConsts.PAGE_FLIP.default) {
+      workSounds.push(new AudioGroupWrapper(
+        'page-flip', // name
+        new AudioSettings(
+          SOUND_SRCS.pageFlip.single,
+          AUDIO_SETTING.DEFAULT,
+        ), // settings
+        1, // relative frequency
+        2000, // duration
+        0, // random additional duration
+      ));
+    }
+    if (workSound.click === workSoundConsts.CLICK.default) {
+      workSounds.push(new AudioGroupWrapper(
+        'single-click', // name
+        new AudioSettings(
+          SOUND_SRCS.click.single,
+          AUDIO_SETTING.INTERMITTENT,
+          100,
+          5000
+        ), // settings
+        workSound.type ? 5 : 10, // relative frequency
+        100, // duration
+        5000, // random additional duration
+      ));
+      workSounds.push(new AudioGroupWrapper(
+        'double-click', // name
+        new AudioSettings(
+          SOUND_SRCS.click.double,
+          AUDIO_SETTING.INTERMITTENT,
+          100,
+          5000
+        ), // settings
+        1, // relative frequency
+        200, // duration
+        3000, // random additional duration
+      ));
+    }
+
+    let switchTaskPause = 1000;
+    let randAdditionalSwitchTaskPause = 2000;
+    if (workSound.pageFlip && !workSound.type && !workSound.click) {
+      randAdditionalSwitchTaskPause = 100000;
+    }
+
+    audioProfile[SOUND_GROUP_NAME.WORK] = new AudioGroup(workSounds);
+
+    return this.getNewPerson(
+      state,
+      icon, // image
+      position, // position
+      audioProfile,
+      habbits,
+      isListener
+    )
+  }
+
   getNewChair(state, position, rotation) {
     return new Chair(state, position, rotation, this.audioContext, this.audioScene);
   }
 
   getNewDoor(state, position, rotation) {
     return new Door(state, position, rotation, this.audioContext, this.audioScene);
+  }
+
+  getCluster({x, y}, tableType, chairNum, rotation, personSettingsList) {
+    const clusterElements = [];
+    const chairCoordinates = [];
+    let radius;
+
+    if (tableType === 'round') {
+      radius = ROUND_TABLE_SIZE / 2;
+      clusterElements.push(new RoundTable({x: x, y: y, z: TABLE_HEIGHT}));
+    } else if (tableType === 'square') {
+      radius = TABLE_WIDTH / 2;
+      clusterElements.push(new SquareTable({x: x, y: y, z: TABLE_HEIGHT}, rotation));
+    }
+
+    if (chairNum === 3) {
+      const unitLen = {x: radius + CHAIR_LENGTH * 0.4, y: 0};
+      // top chair
+      const topChairCoordinates = rotateCoordinates(unitLen, -90 + rotation);
+      chairCoordinates.push({
+        x: topChairCoordinates.x + x,
+        y: topChairCoordinates.y + y,
+      });
+      clusterElements.push(this.getNewChair(
+        ELEMENT_STATE.AVAILABLE,
+        {
+          x: topChairCoordinates.x + x,
+          y: topChairCoordinates.y + y,
+          z: CHAIR_HEIGHT
+        },
+        180 + rotation
+      ));
+      // bottom left chair
+      const botLeftChairCoordinates = rotateCoordinates(unitLen, 150 + rotation);
+      chairCoordinates.push({
+        x: botLeftChairCoordinates.x + x,
+        y: botLeftChairCoordinates.y + y,
+      });
+      clusterElements.push(this.getNewChair(
+        ELEMENT_STATE.AVAILABLE,
+        {
+          x: botLeftChairCoordinates.x + x,
+          y: botLeftChairCoordinates.y + y,
+          z: CHAIR_HEIGHT
+        },
+        60 + rotation
+      ));
+      // bottom right chair
+      const botRightChairCoordinates = rotateCoordinates(unitLen, 30 + rotation);
+      chairCoordinates.push({
+        x: botRightChairCoordinates.x + x,
+        y: botRightChairCoordinates.y + y,
+      });
+      clusterElements.push(this.getNewChair(
+        ELEMENT_STATE.AVAILABLE,
+        {
+          x: botRightChairCoordinates.x + x,
+          y: botRightChairCoordinates.y + y,
+          z: CHAIR_HEIGHT
+        },
+        -60 + rotation
+      ));
+    } else if (chairNum === 2) {
+      const unitLen = {x: radius + CHAIR_LENGTH * 0.4, y: 0};
+      // top chair
+      const topChairCoordinates = rotateCoordinates(unitLen, -90 + rotation);
+      chairCoordinates.push({
+        x: topChairCoordinates.x + x,
+        y: topChairCoordinates.y + y,
+      });
+      clusterElements.push(this.getNewChair(
+        ELEMENT_STATE.AVAILABLE,
+        {
+          x: topChairCoordinates.x + x,
+          y: topChairCoordinates.y + y,
+          z: CHAIR_HEIGHT
+        },
+        180 + rotation
+      ));
+      // bottom chair
+      const botChairCoordinates = rotateCoordinates(unitLen, 90 + rotation);
+      chairCoordinates.push({
+        x: botChairCoordinates.x + x,
+        y: botChairCoordinates.y + y,
+      });
+      clusterElements.push(this.getNewChair(
+        ELEMENT_STATE.AVAILABLE,
+        {
+          x: botChairCoordinates.x + x,
+          y: botChairCoordinates.y + y,
+          z: CHAIR_HEIGHT
+        },
+        rotation
+      ));
+    }
+
+    // populate chairs with people according to the index given and settings of the person
+    if (personSettingsList && personSettingsList.length) {
+      for (const personSettings of personSettingsList) {
+        clusterElements.push(
+          this.makeNewPersonWithSettings(
+            ELEMENT_STATE.WORKING,
+            personSettings.icon,
+            {...chairCoordinates[personSettings.locationIndex], z: 1},
+            personSettings.personSettings,
+            personSettings.isListener
+          )
+        );
+      }
+    }
+
+    return clusterElements;
+
+    function rotateCoordinates({x, y}, rotation) {
+      const sin = Math.sin(rotation / 180 * Math.PI);
+      const cos = Math.cos(rotation / 180 * Math.PI);
+      return {x: x * cos - y * sin, y: x * sin + y * cos}
+    }
   }
 }

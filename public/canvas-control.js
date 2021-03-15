@@ -86,6 +86,9 @@ CanvasControl.prototype.draw = function() {
   this._context.globalAlpha = 1;
   this._context.clearRect(0, 0, this._canvas.width, this._canvas.height);
 
+  this._context.fillStyle = "#848EA7";
+  this._context.fillRect(0, 0, this._canvas.width, this._canvas.height);
+
   this._context.lineWidth = 5;
   this._context.strokeStyle = '#bbb';
   this._context.strokeRect(0, 0, this._canvas.width, this._canvas.height);
@@ -185,15 +188,25 @@ CanvasControl.prototype.getNearestElement = function(cursorPosition) {
   let x = 0;
   let y = 0;
   
+  const toRealUnit = (pos, numerator, denominator) => {
+    return pos * numerator / denominator;
+  }
+  const toRealWidth = (pos) => {
+    return toRealUnit(pos, this._canvas.width, MAX_CANVAS_WIDTH);
+  }
+  const toRealHeight = (pos) => {
+    return toRealUnit(pos, this._canvas.height, MAX_CANVAS_HEIGHT);
+  }
+
   for (let i = 0; i < this._elements.length; i++) {
     if (this._elements[i].clickable == true) {
-      let dx = this._elements[i].position.x / MAX_CANVAS_WIDTH * this._canvas.width - cursorPosition.x;
-      let dy = this._elements[i].position.y / MAX_CANVAS_HEIGHT * this._canvas.height - cursorPosition.y;
+      let dx = toRealWidth(this._elements[i].position.x) - cursorPosition.x;
+      let dy = toRealHeight(this._elements[i].position.y) - cursorPosition.y;
       let distance = Math.abs(dx) + Math.abs(dy); // Manhattan distance.
       if ( // todo: problem arise when rotation performed. consider determining whether pointer is in rotated bounding rectangle
         distance < minDistance
-        && Math.abs(dx) < this._elements[i].width / 2
-        && Math.abs(dy) < this._elements[i].height / 2
+        && Math.abs(dx) < toRealWidth(this._elements[i].width / 2)
+        && Math.abs(dy) < toRealHeight(this._elements[i].height / 2)
       ) {
         minDistance = distance;
         element = this._elements[i];
@@ -228,7 +241,11 @@ CanvasControl.prototype._cursorMoveFunc = function(event) {
   let cursorPosition = this.getCursorPosition(event);
   let nearestElement = this.getNearestElement(cursorPosition);
   
-  if (nearestElement) {
+  if (
+    nearestElement
+    && this.listener.state !== ELEMENT_STATE.PREPARING_TO_GO
+    && this.listener.state !== ELEMENT_STATE.PREPARING_WORK
+  ) {
     this._canvas.style.cursor = 'pointer';
     return true;
   } else {
@@ -237,33 +254,49 @@ CanvasControl.prototype._cursorMoveFunc = function(event) {
   }
 };
 
+CanvasControl.prototype.useElement = function(selectedElement) {
+  if (selectedElement.constructor.name === 'Chair') {
+    this.listener.setState(ELEMENT_STATE.PREPARING_WORK);
+    if (this.listener.habbits.moveOnChair) {
+      selectedElement.enableMovingCreak();
+    }
+    if (this.listener.habbits.chairSlideSound) {
+      selectedElement.selectedSlideSound = this.listener.habbits.chairSlideSound;
+    }
+    
+    selectedElement.setState(ELEMENT_STATE.IN_USE);
+  } else if (selectedElement.constructor.name === 'Door') {
+    this.listener.setState(ELEMENT_STATE.IDLE);
+    selectedElement.selectedDoorSound = this.listener.habbits.doorOpenCloseSound;
+    selectedElement.setState(ELEMENT_STATE.IN_USE);
+  }
+}
+
 CanvasControl.prototype._cursorUpFunc = function(event) {
   let cursorPosition = this.getCursorPosition(event);
   let selectedElement = this.getNearestElement(cursorPosition);
   
   const moveStepSize = 1;
 
-  
-
   if (selectedElement) {
     // useElement called when the person reaches selectedElement
-    const useElement = (selectedElement) => {
-      if (selectedElement.constructor.name === 'Chair') {
-        this.listener.setState(ELEMENT_STATE.PREPARING);
-        if (this.listener.habbits.moveOnChair) {
-          selectedElement.enableMovingCreak();
-        }
-        if (this.listener.habbits.chairSlideSound) {
-          selectedElement.selectedSlideSound = this.listener.habbits.chairSlideSound;
-        }
+    // const useElement = (selectedElement) => {
+    //   if (selectedElement.constructor.name === 'Chair') {
+    //     this.listener.setState(ELEMENT_STATE.PREPARING_WORK);
+    //     if (this.listener.habbits.moveOnChair) {
+    //       selectedElement.enableMovingCreak();
+    //     }
+    //     if (this.listener.habbits.chairSlideSound) {
+    //       selectedElement.selectedSlideSound = this.listener.habbits.chairSlideSound;
+    //     }
         
-        selectedElement.setState(ELEMENT_STATE.IN_USE);
-      } else if (selectedElement.constructor.name === 'Door') {
-        this.listener.setState(ELEMENT_STATE.IDLE);
-        selectedElement.selectedDoorSound = this.listener.habbits.doorOpenCloseSound;
-        selectedElement.setState(ELEMENT_STATE.IN_USE);
-      }
-    }
+    //     selectedElement.setState(ELEMENT_STATE.IN_USE);
+    //   } else if (selectedElement.constructor.name === 'Door') {
+    //     this.listener.setState(ELEMENT_STATE.IDLE);
+    //     selectedElement.selectedDoorSound = this.listener.habbits.doorOpenCloseSound;
+    //     selectedElement.setState(ELEMENT_STATE.IN_USE);
+    //   }
+    // }
     
     const startMoving = () => {
       this.listener.setState(ELEMENT_STATE.WALKING);
@@ -288,7 +321,7 @@ CanvasControl.prototype._cursorUpFunc = function(event) {
         } else { // reaches destination
           this.listener.position.x = selectedElement.position.x;
           this.listener.position.y = selectedElement.position.y;
-          useElement(selectedElement);
+          this.useElement(selectedElement);
           
           clearInterval(moveInterval);
         }
@@ -300,9 +333,13 @@ CanvasControl.prototype._cursorUpFunc = function(event) {
 
     const selectElement = (selectedElement) => {
       let actionDelay = 0;
+      if (this.listener.state === ELEMENT_STATE.WORKING) {
+        this.listener.setState(ELEMENT_STATE.PREPARING_TO_GO);
+      }
       if(this.listener.itemInUse) {
         if (this.listener.itemInUse.constructor.name === 'Chair') {
-          actionDelay = this.listener.itemInUse.stateChangeDelay;
+          actionDelay += this.listener.itemInUse.stateChangeDelay;
+          actionDelay += this.listener.stateChangeDelay;
           this.listener.itemInUse.setState(ELEMENT_STATE.AVAILABLE);
         }
       }
@@ -318,6 +355,9 @@ CanvasControl.prototype._cursorUpFunc = function(event) {
       }, actionDelay);
     }
 
+    if (this.listener.state === ELEMENT_STATE.PREPARING_TO_GO || this.listener.state === ELEMENT_STATE.PREPARING_WORK) {
+      return;
+    }
     selectElement(selectedElement);
   }
 };
