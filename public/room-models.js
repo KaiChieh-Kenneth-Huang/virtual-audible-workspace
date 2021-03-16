@@ -72,16 +72,44 @@ const enterRoom = () => {
   );
   
   let canvas = document.getElementById('canvas');
-  let listener = audioContextAndScene.getNewPerson(
+  let listener = audioContextAndScene.makeNewPersonWithSettings(
+    ELEMENT_STATE.IDLE,
+    new PersonIcon('#666', '#3a3', 'ME'),
+    {x: DOOR_LOCATION.x + PERSON_SIZE, y: DOOR_LOCATION.y, z: 1},
+    90, // orientation; up is 0
+    { // person settings
+      workSound: {
+        type: PERSON_SETTING.WORK_SOUND.TYPE.slow,
+        pageFlip: PERSON_SETTING.WORK_SOUND.PAGE_FLIP.default,
+        click: PERSON_SETTING.WORK_SOUND.CLICK.default,
+      },
+      otherSound: { // otherSound,
+        zipUnzip: PERSON_SETTING.SPECIAL_SOUND.ZIP_UNZIP.default,
+        footstep: PERSON_SETTING.SPECIAL_SOUND.FOOTSTEP.fast,
+        sniffle: PERSON_SETTING.GENERAL_SOUND.SNIFFLE.default,
+        throatClear: PERSON_SETTING.GENERAL_SOUND.THROAT_CLEAR.female,
+        cough: PERSON_SETTING.GENERAL_SOUND.COUGH.female,
+        sneeze: PERSON_SETTING.GENERAL_SOUND.SNEEZE.female,
+      },
+      habbit: { // habbit
+        chairSlideSound: PERSON_SETTING.HABBIT.CHAIR_SLIDE_SOUND.fast,
+        doorOpenCloseSound: PERSON_SETTING.HABBIT.DOOR_OPEN_CLOSE_SOUND.gentle,
+        moveOnChair: true,
+      }
+    },
+    true // is listener
+  );
+
+  audioContextAndScene.getNewPerson(
     ELEMENT_STATE.IDLE,
     new PersonIcon('#666', '#3a3', 'ME'), // image
     {x: DOOR_LOCATION.x + PERSON_SIZE, y: DOOR_LOCATION.y, z: 1}, // position
     90, // orientation; up is 0
     { // sound profile
-      [SOUND_NAME.FOOT_STEP]: new AudioSettings(
-        SOUND_SRCS.footStep.boots,
+      [SOUND_NAME.FOOTSTEP]: new AudioSettings(
+        SOUND_SRCS.footstep.boots,
         AUDIO_SETTING.INTERMITTENT,
-        600,
+        700,
         0
       ),
       [SOUND_NAME.ZIP]: new AudioSettings(
@@ -123,8 +151,19 @@ const enterRoom = () => {
             pageFlip: PERSON_SETTING.WORK_SOUND.PAGE_FLIP.default,
             click: PERSON_SETTING.WORK_SOUND.CLICK.default,
           },
-          // otherSound,
-          // habbit
+          otherSound: { // otherSound,
+            zipUnzip: PERSON_SETTING.SPECIAL_SOUND.ZIP_UNZIP.default,
+            footstep: PERSON_SETTING.SPECIAL_SOUND.FOOTSTEP.fast,
+            sniffle: PERSON_SETTING.GENERAL_SOUND.SNIFFLE.default,
+            throatClear: PERSON_SETTING.GENERAL_SOUND.THROAT_CLEAR.male,
+            cough: PERSON_SETTING.GENERAL_SOUND.COUGH.male,
+            sneeze: PERSON_SETTING.GENERAL_SOUND.SNEEZE.male,
+          },
+          habbit: { // habbit
+            chairSlideSound: PERSON_SETTING.HABBIT.CHAIR_SLIDE_SOUND.slow,
+            doorOpenCloseSound: PERSON_SETTING.HABBIT.DOOR_OPEN_CLOSE_SOUND.gentle,
+            moveOnChair: true,
+          }
         },
         isListener: false
       },
@@ -134,73 +173,6 @@ const enterRoom = () => {
     ...audioContextAndScene.getCluster({x: 1350, y: 250}, 'square', 2, 90),
 
     doorElement,
-    // audioContextAndScene.getNewPerson(
-    //   ELEMENT_STATE.WORKING,
-    //   new PersonIcon('#666', '#a88', 'JD'), // image
-    //   {x: 200, y: 150, z: 1}, // position
-    //   {
-    //     [SOUND_GROUP_NAME.WORK]: new AudioGroup(
-    //       [
-    //         new AudioGroupWrapper(
-    //           'fast-type-1', // name
-    //           new AudioSettings(
-    //             'resources/sounds/work sounds/fast_typ1.mp3',
-    //             AUDIO_SETTING.PARTIAL_PLAY,
-    //             500,
-    //             1000,
-    //             500,
-    //             1000
-    //           ), // settings
-    //           10, // relative frequency
-    //           5000, // duration
-    //           5000, // random additional duration
-    //         ),
-    //         new AudioGroupWrapper(
-    //           'page-flip', // name
-    //           new AudioSettings(
-    //             'resources/sounds/work sounds/single_page_flip.mp3',
-    //             AUDIO_SETTING.DEFAULT,
-    //           ), // settings
-    //           1, // relative frequency
-    //           2000, // duration
-    //           0, // random additional duration
-    //         ),
-    //         new AudioGroupWrapper(
-    //           'single-click', // name
-    //           new AudioSettings(
-    //             'resources/sounds/work sounds/single_click.mp3',
-    //             AUDIO_SETTING.INTERMITTENT,
-    //             100,
-    //             5000
-    //           ), // settings
-    //           5, // relative frequency
-    //           100, // duration
-    //           5000, // random additional duration
-    //         ),
-    //       ],
-    //       1000, // switch task pause duration
-    //       2000 // random additional task switch pause
-    //     ),
-    //     'clear-throat': new AudioSettings(
-    //       'resources/sounds/intrinsic human sounds/male_throat_clear.mp3',
-    //       AUDIO_SETTING.INTERMITTENT,
-    //       1000,
-    //       60000
-    //     ),
-    //     'sniffle': new AudioSettings(
-    //       'resources/sounds/intrinsic human sounds/sniffle.mp3',
-    //       AUDIO_SETTING.INTERMITTENT,
-    //       1000,
-    //       30000
-    //     ),
-    //     [SOUND_NAME.FOOT_STEP]: new AudioSettings(
-    //       'resources/sounds/environment related human sounds/single_footstep_boots.wav',
-    //       AUDIO_SETTING.DEFAULT,
-    //       200,
-    //       0
-    //     ),
-    //   }, // audio profile
-    // ),
   ];
   canvasControl.addElements(newElements);
 

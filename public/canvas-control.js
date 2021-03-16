@@ -362,7 +362,6 @@ CanvasControl.prototype._cursorUpFunc = function(event) {
             itemInUse.setState(ELEMENT_STATE.AVAILABLE);
           } else if (itemInUse.state === ELEMENT_STATE.IN_USE) {
             setTimeout(() => {
-              console.log(itemInUse);
               itemInUse.setState(ELEMENT_STATE.AVAILABLE);
             }, delay);
           }

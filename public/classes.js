@@ -107,7 +107,8 @@ class RoundTable extends CanvasElement {
 }
 class SoundSource extends CanvasElement {
   constructor (state, icon, position, rotation, orientation, width, height, alpha, clickable, layer, audioContext, audioScene, audioProfile, isListener) {
-    super(state, icon, position, rotation, width, height, alpha, clickable, layer);
+    // state is set with setState to trigger change state action
+    super(null, icon, position, rotation, width, height, alpha, clickable, layer);
     this.orientation = orientation;
     this.audioContext = audioContext;
     this.audioScene = audioScene;
@@ -136,7 +137,6 @@ class SoundSource extends CanvasElement {
     }
 
     // trigger state change to start playing sounds
-    this.state = null;
     this.setState(state);
   }
   
@@ -335,7 +335,7 @@ class Person extends SoundSource {
 
   _endPrevState(state, prevState) {
     if (prevState === ELEMENT_STATE.WALKING) {
-      this.pause(SOUND_NAME.FOOT_STEP);
+      this.pause(SOUND_NAME.FOOTSTEP);
     } else if (prevState === ELEMENT_STATE.WORKING) {
       this.pause(SOUND_GROUP_NAME.WORK);
     } else if (prevState === ELEMENT_STATE.PREPARING_WORK) {
@@ -344,8 +344,16 @@ class Person extends SoundSource {
   }
 
   _initState(state, prevState) {
+    // this should only run once on initialization
+    if (prevState === null && state) {
+      this.play(SOUND_NAME.SNIFFLE);
+      this.play(SOUND_NAME.THROAT_CLEAR);
+      this.play(SOUND_NAME.COUGH);
+      this.play(SOUND_NAME.SNEEZE);
+    }
+
     if (state === ELEMENT_STATE.WALKING) {
-      this.play(SOUND_NAME.FOOT_STEP);
+      this.play(SOUND_NAME.FOOTSTEP);
     } else if (state === ELEMENT_STATE.PREPARING_WORK) {
       const timeToSitDown = 3500;
       setTimeout(() => {
@@ -453,14 +461,16 @@ class Chair extends SoundSource {
 
   _initState(state, prevState) {
     if (state === ELEMENT_STATE.IN_USE) {
-      const sittingCreakSound =  chooseOneRandomlyFromList([null, SOUND_NAME.CHAIR_SITTING_CREAK]);
-      this.play(this.selectedSlideSound);
-      this.alpha = 1;
-      this.clickable = false;
-      if (sittingCreakSound) {
-        setTimeout(() => {
-          this.play(sittingCreakSound);
-        }, this.getAudioDuration(this.selectedSlideSound) * 1000 + 750);
+      if (prevState === ELEMENT_STATE.RESERVED) {
+        const sittingCreakSound = chooseOneRandomlyFromList([null, SOUND_NAME.CHAIR_SITTING_CREAK]);
+        this.play(this.selectedSlideSound);
+        this.alpha = 1;
+        this.clickable = false;
+        if (sittingCreakSound) {
+          setTimeout(() => {
+            this.play(sittingCreakSound);
+          }, this.getAudioDuration(this.selectedSlideSound) * 1000 + 750);
+        }
       }
     } else if (state === ELEMENT_STATE.RESERVED) {
       this.alpha = 0.5;
@@ -642,14 +652,137 @@ class AudioContextAndScene {
         3000, // random additional duration
       ));
     }
-
+    // configure switch task pause for work sounds
     let switchTaskPause = 1000;
     let randAdditionalSwitchTaskPause = 2000;
     if (workSound.pageFlip && !workSound.type && !workSound.click) {
       randAdditionalSwitchTaskPause = 100000;
     }
-
     audioProfile[SOUND_GROUP_NAME.WORK] = new AudioGroup(workSounds, switchTaskPause, randAdditionalSwitchTaskPause);
+    
+    // create preparation sounds related to work
+    if (workSound.type || workSound.click) {
+      // add put laptop on table sound on start work
+      audioProfile[SOUND_NAME.PLACE_LAPTOP] = new AudioSettings(
+        SOUND_SRCS.preparation.placeLaptop,
+        AUDIO_SETTING.DEFAULT
+      )
+    }
+    if (workSound.pageFlip) {
+      audioProfile[SOUND_NAME.PLACE_BOOK] = new AudioSettings(
+        SOUND_SRCS.preparation.placeBook,
+        AUDIO_SETTING.DEFAULT
+      )
+    }
+    
+    if (otherSound) {
+      // create other preparation sounds
+      if (otherSound.zipUnzip === PERSON_SETTING.SPECIAL_SOUND.ZIP_UNZIP.default) {
+        audioProfile[SOUND_NAME.ZIP] = new AudioSettings(
+          SOUND_SRCS.preparation.zip,
+          AUDIO_SETTING.DEFAULT,
+        );
+        audioProfile[SOUND_NAME.UNZIP] = new AudioSettings(
+          SOUND_SRCS.preparation.unzip,
+          AUDIO_SETTING.DEFAULT,
+        );
+      }
+      // create movement sounds
+      let footstepPeriod = 500;
+      if (otherSound.footstep === PERSON_SETTING.SPECIAL_SOUND.FOOTSTEP.fast) {
+        footstepPeriod = 500;
+      } else if (otherSound.footstep === PERSON_SETTING.SPECIAL_SOUND.FOOTSTEP.slow) {
+        footstepPeriod = 700;
+      }
+      audioProfile[SOUND_NAME.FOOTSTEP] = new AudioSettings(
+        SOUND_SRCS.footstep.boots,
+        AUDIO_SETTING.INTERMITTENT,
+        footstepPeriod * 0.9,
+        footstepPeriod * 0.2
+      );
+      // create general sounds
+      if (otherSound.sniffle === PERSON_SETTING.GENERAL_SOUND.SNIFFLE.default) {
+        audioProfile[SOUND_NAME.SNIFFLE] = new AudioSettings(
+          SOUND_SRCS.sniffle.default,
+          AUDIO_SETTING.INTERMITTENT,
+          1000,
+          60000
+        );
+      }
+      if (otherSound.throatClear) {
+        const pause = 2000;
+        const additionalRandomPause = 100000;
+        let source;
+        if (otherSound.throatClear === PERSON_SETTING.GENERAL_SOUND.THROAT_CLEAR.male) {
+          source = SOUND_SRCS.throatClear.male;
+        } else if (otherSound.throatClear === PERSON_SETTING.GENERAL_SOUND.THROAT_CLEAR.female) {
+          source = SOUND_SRCS.throatClear.female;
+        }
+        audioProfile[SOUND_NAME.THROAT_CLEAR] = new AudioSettings(
+          source,
+          AUDIO_SETTING.INTERMITTENT,
+          pause,
+          additionalRandomPause
+        );
+      }
+      if (otherSound.cough) {
+        const pause = 30000;
+        const additionalRandomPause = 180000;
+        let source;
+        if (otherSound.cough === PERSON_SETTING.GENERAL_SOUND.COUGH.male) {
+          source = SOUND_SRCS.cough.male;
+        } else if (otherSound.cough === PERSON_SETTING.GENERAL_SOUND.COUGH.female) {
+          source = SOUND_SRCS.cough.female;
+        }
+        audioProfile[SOUND_NAME.COUGH] = new AudioSettings(
+          source,
+          AUDIO_SETTING.INTERMITTENT,
+          pause,
+          additionalRandomPause
+        );
+      }
+      if (otherSound.sneeze) {
+        const pause = 30000;
+        const additionalRandomPause = 180000;
+        let source;
+        if (otherSound.sneeze === PERSON_SETTING.GENERAL_SOUND.SNEEZE.male) {
+          source = SOUND_SRCS.sneeze.male;
+        } else if (otherSound.sneeze === PERSON_SETTING.GENERAL_SOUND.SNEEZE.female) {
+          source = SOUND_SRCS.sneeze.female;
+        }
+        audioProfile[SOUND_NAME.SNEEZE] = new AudioSettings(
+          source,
+          AUDIO_SETTING.INTERMITTENT,
+          pause,
+          additionalRandomPause
+        );
+      }
+    }
+
+    // set habbits
+    let chairSlideSound = SOUND_NAME.CHAIR_SLIDE_SLOW; // default chair slide sound
+    let doorOpenCloseSound = SOUND_NAME.DOOR_GENTLE; // default door open/close sound
+    let moveOnChair = false; // default move on chair setting
+    if (habbit) {
+      if (habbit.chairSlideSound === PERSON_SETTING.HABBIT.CHAIR_SLIDE_SOUND.slow) {
+        chairSlideSound = SOUND_NAME.CHAIR_SLIDE_SLOW;
+      } else if (habbit.chairSlideSound === PERSON_SETTING.HABBIT.CHAIR_SLIDE_SOUND.quick) {
+        chairSlideSound = SOUND_NAME.CHAIR_SLIDE_QUICK;
+      }
+
+      if (habbit.doorOpenCloseSound === PERSON_SETTING.HABBIT.DOOR_OPEN_CLOSE_SOUND.gentle) {
+        doorOpenCloseSound = SOUND_NAME.DOOR_GENTLE;
+      } else if (habbit.doorOpenCloseSound === PERSON_SETTING.HABBIT.DOOR_OPEN_CLOSE_SOUND.slam) {
+        doorOpenCloseSound = SOUND_NAME.DOOR_SLAM;
+      }
+
+      if (habbit.moveOnChair !== undefined) {
+        moveOnChair = habbit.moveOnChair;
+      }
+    }
+    habbits.chairSlideSound = chairSlideSound;
+    habbits.doorOpenCloseSound = doorOpenCloseSound;
+    habbits.moveOnChair = moveOnChair;
 
     return this.getNewPerson(
       state,
@@ -777,8 +910,10 @@ class AudioContextAndScene {
           personSettings.isListener
         );
         newPerson.itemInUse = chair;
-        newPerson.itemInUse.state = ELEMENT_STATE.IN_USE;
-        newPerson.itemInUse.clickable = false;
+        newPerson.itemInUse.setState(ELEMENT_STATE.IN_USE);
+        if (newPerson.habbits.moveOnChair) {
+          newPerson.itemInUse.enableMovingCreak();
+        }
         clusterElements.push(newPerson);
       }
     }

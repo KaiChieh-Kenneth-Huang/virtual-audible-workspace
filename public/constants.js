@@ -17,7 +17,7 @@ const SOUND_SRCS = {
     squeak1: SOUNDS_PATH + ENVIRONMENT_PATH + 'door_squeak_1.mp3',
     squeak2: SOUNDS_PATH + ENVIRONMENT_PATH + 'door_squeak_2.mp3',
   },
-  footStep: {
+  footstep: {
     boots: SOUNDS_PATH + ENVIRONMENT_PATH + 'single_footstep_boots.wav',
   },
   preparation: {
@@ -77,11 +77,37 @@ const PERSON_SETTING = {
       default: 'default'
     },
     THROAT_CLEAR: {
+      male: 'male',
+      female: 'female',
+    },
+    COUGH: {
+      male: 'male',
+      female: 'female',
+    },
+    SNEEZE: {
+      male: 'male',
+      female: 'female',
+    },
+  },
+  SPECIAL_SOUND: {
+    ZIP_UNZIP: {
       default: 'default'
+    },
+    FOOTSTEP: {
+      fast: 'fast',
+      slow: 'slow',
     },
   },
   HABBIT: {
-
+    CHAIR_SLIDE_SOUND: {
+      quick: 'quick',
+      slow: 'slow',
+      slow_squeaky: 'slow-squeaky',
+    },
+    DOOR_OPEN_CLOSE_SOUND: {
+      gentle: 'gentle',
+      slam: 'slam',
+    },
   },
 }
 
@@ -156,7 +182,7 @@ const ELEMENT_STATE = {
 }
 
 const SOUND_NAME = {
-  FOOT_STEP: 'foot-step',
+  FOOTSTEP: 'footstep',
   CHAIR_SLIDE_QUICK: 'chair-slide-quick',
   CHAIR_SLIDE_SLOW: 'chair-slide-slow',
   CHAIR_SLIDE_SLOW_SQUEAKY: 'chair-slide-slow-squeaky',
@@ -171,6 +197,10 @@ const SOUND_NAME = {
   DOOR_NO_SQUEAK: 'door-no-squeak',
   DOOR_SQUEAK_1: 'door-squeak-1',
   DOOR_SQUEAK_2: 'door-squeak-2',
+  SNIFFLE: 'sniffle',
+  THROAT_CLEAR: 'throat-clear',
+  COUGH: 'cough',
+  SNEEZE: 'sneeze',
 }
 
 const SOUND_GROUP_NAME = {
