@@ -488,7 +488,7 @@ class Door extends SoundSource {
       icons['door'],
       position,
       rotation,
-      rotation,
+      -90,
       DOOR_WIDTH,
       DOOR_HEIGHT,
       1,

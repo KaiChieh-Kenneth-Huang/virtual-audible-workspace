@@ -4,12 +4,15 @@ preloadAudioElements();
 function preloadAudioElements() {
   const sources = flattenObjectToUniqueStringArray(SOUND_SRCS);
   const startTime = Date.now();
+  let sourceNum = 0;
   console.log('Begin preloading audio...');
   for (const src of sources) {
+    sourceNum++;
     preloadAudioElement(src);
   }
+
   const checkLoadComplete = setInterval(() => {
-    if (sources.length === Object.keys(preloadedAudioBuffer).length) {
+    if (sourceNum === Object.keys(preloadedAudioBuffer).length) {
       const timeElapsed = (Date.now() - startTime) / 1000;
       document.querySelector('#enter-room-btn').disabled = false;
       console.log('Audio preloaded in ' + timeElapsed + 's.');
@@ -55,5 +58,5 @@ function flattenObjectToUniqueStringArray(obj) {
       }
     }
     processObj(obj);
-    return Object.keys(set);
+    return set.keys();
 }
