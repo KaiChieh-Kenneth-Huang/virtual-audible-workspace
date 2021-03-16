@@ -41,9 +41,14 @@ function updatePositions(elements) {
       let y = (element.position.z - ROOM_DIMENSIONS.height / 2);
       let z = (element.position.y - MAX_CANVAS_HEIGHT / 2) / MAX_CANVAS_HEIGHT * ROOM_DIMENSIONS.depth;
       if (element.isListener) {
+        const unitVector = {x: 0, y: 1};
+        const {x: rx, y: ry} = rotateCoordinates(unitVector, element.orientation);
         element.audioScene.setListenerPosition(x, y, z);
+        element.audioScene.setListenerOrientation(rx, ry, 0, 0, 0, 1); // x is left, y is up (upz = 1)
+        element.resonanceAudioSrc.setPosition(x + rx * 0.4, y, z + ry * 0.4); // add some y offset for sound to be in both channels when walking
+      } else {
+        element.resonanceAudioSrc.setPosition(x, y, z);
       }
-      element.resonanceAudioSrc.setPosition(x, y - 0.5, z); // add some y offset for sound to be in both channels when walking
     }
   }
 }
@@ -82,6 +87,7 @@ const enterRoom = () => {
     ELEMENT_STATE.IDLE,
     new PersonIcon('#666', '#3a3', 'ME'), // image
     {x: DOOR_LOCATION.x + PERSON_SIZE, y: DOOR_LOCATION.y, z: 1}, // position
+    90, // orientation; up is 0
     { // sound profile
       [SOUND_NAME.FOOT_STEP]: new AudioSettings(
         'resources/sounds/environment related human sounds/single_footstep_boots.wav',
@@ -211,6 +217,11 @@ const enterRoom = () => {
   // setTimeout(() => {
   //   canvasControl.useElement(doorElement)
   // }, 500);
+  //
+  setTimeout(() => {
+    selectRoomProperties();
+    //canvasControl.invokeCallback();
+  }, 2000)
 }
 
 const onLoad = function() {

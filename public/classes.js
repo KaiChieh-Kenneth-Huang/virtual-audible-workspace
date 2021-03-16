@@ -106,8 +106,9 @@ class RoundTable extends CanvasElement {
   }
 }
 class SoundSource extends CanvasElement {
-  constructor (state, icon, position, rotation, width, height, alpha, clickable, layer, audioContext, audioScene, audioProfile, isListener) {
+  constructor (state, icon, position, rotation, orientation, width, height, alpha, clickable, layer, audioContext, audioScene, audioProfile, isListener) {
     super(state, icon, position, rotation, width, height, alpha, clickable, layer);
+    this.orientation = orientation;
     this.audioContext = audioContext;
     this.audioScene = audioScene;
     this.audioElements = {};
@@ -311,10 +312,10 @@ class SoundSource extends CanvasElement {
 }
 
 class Person extends SoundSource {
-  constructor(state, icon, position, audioContext, audioScene, audioProfile, habbits, isListener) {
+  constructor(state, icon, position, orientation, audioContext, audioScene, audioProfile, habbits, isListener) {
     const alpha = isListener ? 1 : 0.7;
     const layer = isListener ? 11 : 10;
-    super(state, icon, position, 0, PERSON_SIZE, PERSON_SIZE, alpha, false, layer, audioContext, audioScene, audioProfile, isListener);
+    super(state, icon, position, 0, orientation, PERSON_SIZE, PERSON_SIZE, alpha, false, layer, audioContext, audioScene, audioProfile, isListener);
     this.habbits = habbits;
     this.itemInUse = null;
   }
@@ -390,6 +391,7 @@ class Chair extends SoundSource {
       icons['chair'],
       position,
       rotation,
+      rotation, // orientation up is 0; chair icon is facing up
       CHAIR_WIDTH,
       CHAIR_LENGTH,
       1,
@@ -477,6 +479,7 @@ class Door extends SoundSource {
       icons['door'],
       position,
       rotation,
+      rotation,
       DOOR_WIDTH,
       DOOR_HEIGHT,
       1,
@@ -539,14 +542,15 @@ class AudioContextAndScene {
   }
   
   // methods for adding elements to room
-  getNewPerson(state, icon, position, audioProfile, habbits, isListener) {
-    return new Person(state, icon, position, this.audioContext, this.audioScene, audioProfile, habbits, isListener);
+  getNewPerson(state, icon, position, orientation, audioProfile, habbits, isListener) {
+    return new Person(state, icon, position, orientation, this.audioContext, this.audioScene, audioProfile, habbits, isListener);
   }
 
   makeNewPersonWithSettings(
     state,
     icon,
     position,
+    orientation,
     {
       workSound,
       otherSound,
@@ -642,6 +646,7 @@ class AudioContextAndScene {
       state,
       icon, // image
       position, // position
+      orientation,
       audioProfile,
       habbits,
       isListener
@@ -753,14 +758,16 @@ class AudioContextAndScene {
     // populate chairs with people according to the index given and settings of the person
     if (personSettingsList && personSettingsList.length) {
       for (const personSettings of personSettingsList) {
+        const chair = clusterElements[personSettings.locationIndex + 1]; // first one is the table
         const newPerson = this.makeNewPersonWithSettings(
           ELEMENT_STATE.WORKING,
           personSettings.icon,
           {...chairCoordinates[personSettings.locationIndex], z: 1},
+          chair.orientation,
           personSettings.personSettings,
           personSettings.isListener
         );
-        newPerson.itemInUse = clusterElements[personSettings.locationIndex + 1]; // first one is the table
+        newPerson.itemInUse = chair;
         newPerson.itemInUse.state = ELEMENT_STATE.IN_USE;
         newPerson.itemInUse.clickable = false;
         clusterElements.push(newPerson);
@@ -768,11 +775,5 @@ class AudioContextAndScene {
     }
 
     return clusterElements;
-
-    function rotateCoordinates({x, y}, rotation) {
-      const sin = Math.sin(rotation / 180 * Math.PI);
-      const cos = Math.cos(rotation / 180 * Math.PI);
-      return {x: x * cos - y * sin, y: x * sin + y * cos}
-    }
   }
 }

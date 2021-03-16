@@ -108,6 +108,7 @@ CanvasControl.prototype.draw = function() {
       this._context.rotate(this._elements[i].rotation * Math.PI / 180);
 
       if (isPerson) {
+        const isListener = this._elements[i].isListener;
         const outline = new Path2D();
         const fill = new Path2D();
         const radius = (width + height) / 4;
@@ -131,6 +132,17 @@ CanvasControl.prototype.draw = function() {
         
         this._context.fill(fill);
         this._context.stroke(outline);
+
+        // draw direction arrow
+        if (isListener) {
+          this._context.rotate(this._elements[i].orientation * Math.PI / 180);
+          this._context.beginPath();
+          this._context.moveTo(0, -radius * 2);
+          this._context.lineTo(radius * 0.4, -radius * 1.2);
+          this._context.lineTo(-radius * 0.4, -radius * 1.2);
+          this._context.fill();
+          this._context.rotate(-this._elements[i].orientation * Math.PI / 180);
+        }
 
         // draw text
         // text width check
@@ -310,19 +322,24 @@ CanvasControl.prototype._cursorUpFunc = function(event) {
         if (Math.abs(selectedElement.position.x - this.listener.position.x) > moveStepSize) {
           if (selectedElement.position.x > this.listener.position.x) {
             this.listener.position.x += moveStepSize;
+            this.listener.orientation = 90;
           } else {
             this.listener.position.x -= moveStepSize;
+            this.listener.orientation = -90;
           }
         } else if (Math.abs(selectedElement.position.y - this.listener.position.y) > moveStepSize) {
           if (selectedElement.position.y > this.listener.position.y) {
             this.listener.position.y += moveStepSize;
+            this.listener.orientation = 180;
           } else {
             this.listener.position.y -= moveStepSize;
+            this.listener.orientation = 0;
           }
         } else { // reaches destination
           this.listener.position.x = selectedElement.position.x;
           this.listener.position.y = selectedElement.position.y;
           this.useElement(selectedElement);
+          this.listener.orientation = selectedElement.orientation;
           
           clearInterval(moveInterval);
         }

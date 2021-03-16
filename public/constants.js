@@ -99,14 +99,14 @@ const MATERIALS = {
     up: 'marble', down: 'marble',
     front: 'marble', back: 'marble',
   },
-  outside: {
+  space: {
     left: 'transparent', right: 'transparent',
-    up: 'transparent', down: 'grass',
+    up: 'transparent', down: 'transparent',
     front: 'transparent', back: 'transparent',
   },
 };
 
-const ROOM_MATERIALS = MATERIALS.outside;
+const ROOM_MATERIALS = MATERIALS.space;
 
 const AUDIO_SETTING = {
   DEFAULT: 0,
