@@ -1,8 +1,31 @@
 const SOUNDS_PATH = 'resources/sounds/';
 const ENVIRONMENT_PATH = 'environment related human sounds/'
-const INTRINSIC_PATH = 'intrinsic human sound/'
+const INTRINSIC_PATH = 'intrinsic human sounds/'
 const WORK_PATH = 'work sounds/'
 const SOUND_SRCS = {
+  chair: {
+    slideQuick: SOUNDS_PATH + ENVIRONMENT_PATH + 'chair_slide_quick.mp3',
+    slideSlow: SOUNDS_PATH + ENVIRONMENT_PATH + 'chair_slide_slow.mp3',
+    slideSlowSqueaky: SOUNDS_PATH + ENVIRONMENT_PATH + 'chair_slide_slow_squeaky.mp3',
+    movingCreak: SOUNDS_PATH + ENVIRONMENT_PATH + 'moving_creak.wav',
+    sittingCreak: SOUNDS_PATH + ENVIRONMENT_PATH + 'sitting_creak.wav',
+  },
+  door: {
+    gentle: SOUNDS_PATH + ENVIRONMENT_PATH + 'door_gentle.mp3',
+    slam: SOUNDS_PATH + ENVIRONMENT_PATH + 'door_slam.mp3',
+    noSqueak: SOUNDS_PATH + ENVIRONMENT_PATH + 'door_no_squeak.mp3',
+    squeak1: SOUNDS_PATH + ENVIRONMENT_PATH + 'door_squeak_1.mp3',
+    squeak2: SOUNDS_PATH + ENVIRONMENT_PATH + 'door_squeak_2.mp3',
+  },
+  footStep: {
+    boots: SOUNDS_PATH + ENVIRONMENT_PATH + 'single_footstep_boots.wav',
+  },
+  preparation: {
+    zip: SOUNDS_PATH + ENVIRONMENT_PATH + 'zipping.mp3',
+    unzip: SOUNDS_PATH + ENVIRONMENT_PATH + 'unzipping.mp3',
+    placeLaptop: SOUNDS_PATH + ENVIRONMENT_PATH + 'place_laptop.mp3',
+    placeBook: SOUNDS_PATH + ENVIRONMENT_PATH + 'place_book.wav',
+  },
   sniffle: {
     default: SOUNDS_PATH + INTRINSIC_PATH + 'sniffle.mp3'
   },
@@ -139,7 +162,8 @@ const SOUND_NAME = {
   CHAIR_SLIDE_SLOW_SQUEAKY: 'chair-slide-slow-squeaky',
   CHAIR_MOVING_CREAK: 'chair-moving-creak',
   CHAIR_SITTING_CREAK: 'chair-sitting-creak',
-  BAG_ZIP: 'bag-zip',
+  ZIP: 'zip',
+  UNZIP: 'unzip',
   PLACE_BOOK: 'place-book',
   PLACE_LAPTOP: 'place-laptop',
   DOOR_GENTLE: 'door-gentle',

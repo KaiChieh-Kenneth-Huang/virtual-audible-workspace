@@ -145,21 +145,29 @@ class SoundSource extends CanvasElement {
   }
 
   addAudioElement(key, audioSettings) {
-    const audioCtx = this.audioContext;
-    const myRequest = new Request(audioSettings.source);
-  
-    fetch(myRequest).then((response) => {
-      return response.arrayBuffer();
-    }).then((buffer) => {
-      audioCtx.decodeAudioData(buffer, (decodedData) => {
-        // store the buffer for future AudioSource instances
-        this.audioElements[key] = {
-          source: null, // source created when sound is played
-          buffer: decodedData,
-          audioSettings: audioSettings
-        }
+    if (preloadedAudioBuffer[audioSettings.source]) {
+      this.audioElements[key] = {
+        source: null, // source created when sound is played
+        buffer: preloadedAudioBuffer[audioSettings.source],
+        audioSettings: audioSettings
+      }
+    } else {
+      const audioCtx = this.audioContext;
+      const myRequest = new Request(audioSettings.source);
+    
+      fetch(myRequest).then((response) => {
+        return response.arrayBuffer();
+      }).then((buffer) => {
+        audioCtx.decodeAudioData(buffer, (decodedData) => {
+          // store the buffer for future AudioSource instances
+          this.audioElements[key] = {
+            source: null, // source created when sound is played
+            buffer: decodedData,
+            audioSettings: audioSettings
+          }
+        });
       });
-    });
+    }
   }
 
   hasAudioElement(key) {
@@ -401,25 +409,25 @@ class Chair extends SoundSource {
       audioScene,
       {
         [SOUND_NAME.CHAIR_SLIDE_QUICK]: new AudioSettings(
-          'resources/sounds/environment related human sounds/chair_slide_quick.mp3',
+          SOUND_SRCS.chair.slideQuick,
           AUDIO_SETTING.DEFAULT,
         ),
         [SOUND_NAME.CHAIR_SLIDE_SLOW]: new AudioSettings(
-          'resources/sounds/environment related human sounds/chair_slide_slow.mp3',
+          SOUND_SRCS.chair.slideSlow,
           AUDIO_SETTING.DEFAULT,
         ),
         [SOUND_NAME.CHAIR_SLIDE_SLOW_SQUEAKY]: new AudioSettings(
-          'resources/sounds/environment related human sounds/chair_slide_slow_squeaky.mp3',
+          SOUND_SRCS.chair.slideSlowSqueaky,
           AUDIO_SETTING.DEFAULT,
         ),
         [SOUND_NAME.CHAIR_MOVING_CREAK]: new AudioSettings(
-          'resources/sounds/environment related human sounds/moving_creak.wav',
+          SOUND_SRCS.chair.movingCreak,
           AUDIO_SETTING.INTERMITTENT,
           5000,
           200000
         ),
         [SOUND_NAME.CHAIR_SITTING_CREAK]: new AudioSettings(
-          'resources/sounds/environment related human sounds/sitting_creak.wav',
+          SOUND_SRCS.chair.sittingCreak,
           AUDIO_SETTING.DEFAULT,
         ),
       },
@@ -489,23 +497,23 @@ class Door extends SoundSource {
       audioScene,
       {
         [SOUND_NAME.DOOR_GENTLE]: new AudioSettings(
-          'resources/sounds/environment related human sounds/door_gentle.mp3',
+          SOUND_SRCS.door.gentle,
           AUDIO_SETTING.DEFAULT,
         ),
         [SOUND_NAME.DOOR_SLAM]: new AudioSettings(
-          'resources/sounds/environment related human sounds/door_slam.mp3',
+          SOUND_SRCS.door.slam,
           AUDIO_SETTING.DEFAULT,
         ),
         [SOUND_NAME.DOOR_NO_SQUEAK]: new AudioSettings(
-          'resources/sounds/environment related human sounds/door_no_squeak.mp3',
+          SOUND_SRCS.door.noSqueak,
           AUDIO_SETTING.DEFAULT,
         ),
         [SOUND_NAME.DOOR_SQUEAK_1]: new AudioSettings(
-          'resources/sounds/environment related human sounds/door_squeak_1.mp3',
+          SOUND_SRCS.door.squeak1,
           AUDIO_SETTING.DEFAULT,
         ),
         [SOUND_NAME.DOOR_SQUEAK_2]: new AudioSettings(
-          'resources/sounds/environment related human sounds/door_squeak_2.mp3',
+          SOUND_SRCS.door.squeak2,
           AUDIO_SETTING.DEFAULT,
         ),
       },

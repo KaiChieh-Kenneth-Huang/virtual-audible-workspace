@@ -1,17 +1,7 @@
-let audioContext;
+var audioContext;
 let canvasControl;
 let audioScene;
 let audioContextAndScene;
-let audioElements = [];
-let audioElementSources = [];
-let soundSources = [];
-let sourceIds = ['sourceAButton', 'sourceBButton', 'sourceCButton', 'sourceDIcon'];
-let sourceIconIdsAndFile = {
-  sourceAIcon: 'resources/sounds/cube-sound.wav',
-  sourceBIcon: 'resources/sounds/speech-sample.wav',
-  sourceCIcon: 'resources/sounds/music.wav',
-  sourceDIcon: 'resources/sounds/speech-sample.wav',
-};
 
 let audioReady = false;
 
@@ -58,7 +48,6 @@ function updatePositions(elements) {
  */
 function initAudio() {
   audioContext = new (window.AudioContext || window.webkitAudioContext);
-
   // Initialize scene and create Source(s).
   audioScene = new ResonanceAudio(audioContext, {
     ambisonicOrder: 1,
@@ -90,25 +79,25 @@ const enterRoom = () => {
     90, // orientation; up is 0
     { // sound profile
       [SOUND_NAME.FOOT_STEP]: new AudioSettings(
-        'resources/sounds/environment related human sounds/single_footstep_boots.wav',
+        SOUND_SRCS.footStep.boots,
         AUDIO_SETTING.INTERMITTENT,
         600,
         0
       ),
       [SOUND_NAME.ZIP]: new AudioSettings(
-        'resources/sounds/environment related human sounds/zipping.mp3',
+        SOUND_SRCS.preparation.zip,
         AUDIO_SETTING.DEFAULT,
       ),
       [SOUND_NAME.UNZIP]: new AudioSettings(
-        'resources/sounds/environment related human sounds/unzipping.mp3',
+        SOUND_SRCS.preparation.unzip,
         AUDIO_SETTING.DEFAULT,
       ),
       [SOUND_NAME.PLACE_BOOK]: new AudioSettings(
-        'resources/sounds/environment related human sounds/place_book.wav',
+        SOUND_SRCS.preparation.placeBook,
         AUDIO_SETTING.DEFAULT,
       ),
       [SOUND_NAME.PLACE_LAPTOP]: new AudioSettings(
-        'resources/sounds/environment related human sounds/place_laptop.mp3',
+        SOUND_SRCS.preparation.placeLaptop,
         AUDIO_SETTING.DEFAULT,
       ),
     },
