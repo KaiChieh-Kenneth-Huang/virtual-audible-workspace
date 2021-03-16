@@ -22,9 +22,10 @@ class AudioPlayControl {
 // -> partial play: playDuration? ...check play usage then decide on how to implement this
 // todo: parse audio length for min pause duration
 class AudioSettings extends AudioPlayControl {
-  constructor(source, category, pauseDuration, randAdditionalPause, playDuration, randAdditionalPlay) {
+  constructor(source, gain, category, pauseDuration, randAdditionalPause, playDuration, randAdditionalPlay) {
     super();
     this.source = source;
+    this.gain = gain;
     this.category = category;
     this.pauseDuration = pauseDuration;
     this.randAdditionalPause = randAdditionalPause;
@@ -199,6 +200,9 @@ class SoundSource extends CanvasElement {
 
   playSound(key, loop, startTime) {
     const newSource = this.audioContext.createBufferSource();
+    const gainNode = this.audioContext.createGain();
+    gainNode.gain.value = this.audioElements[key].audioSettings.gain;
+
     if (this.audioElements[key].source) {
       this.audioElements[key].source.stop();
     }
@@ -207,7 +211,8 @@ class SoundSource extends CanvasElement {
       newSource.loop = loop;
     }
     newSource.buffer = this.audioElements[key].buffer;
-    newSource.connect(this.resonanceAudioSrc.input);
+    newSource.connect(gainNode);
+    gainNode.connect(this.resonanceAudioSrc.input);
     newSource.start(0, startTime);
   }
 
@@ -419,24 +424,29 @@ class Chair extends SoundSource {
       {
         [SOUND_NAME.CHAIR_SLIDE_QUICK]: new AudioSettings(
           SOUND_SRCS.chair.slideQuick,
+          1,
           AUDIO_SETTING.DEFAULT,
         ),
         [SOUND_NAME.CHAIR_SLIDE_SLOW]: new AudioSettings(
           SOUND_SRCS.chair.slideSlow,
+          1,
           AUDIO_SETTING.DEFAULT,
         ),
         [SOUND_NAME.CHAIR_SLIDE_SLOW_SQUEAKY]: new AudioSettings(
           SOUND_SRCS.chair.slideSlowSqueaky,
+          1,
           AUDIO_SETTING.DEFAULT,
         ),
         [SOUND_NAME.CHAIR_MOVING_CREAK]: new AudioSettings(
           SOUND_SRCS.chair.movingCreak,
+          1,
           AUDIO_SETTING.INTERMITTENT,
           5000,
           200000
         ),
         [SOUND_NAME.CHAIR_SITTING_CREAK]: new AudioSettings(
           SOUND_SRCS.chair.sittingCreak,
+          1,
           AUDIO_SETTING.DEFAULT,
         ),
       },
@@ -509,22 +519,27 @@ class Door extends SoundSource {
       {
         [SOUND_NAME.DOOR_GENTLE]: new AudioSettings(
           SOUND_SRCS.door.gentle,
+          1,
           AUDIO_SETTING.DEFAULT,
         ),
         [SOUND_NAME.DOOR_SLAM]: new AudioSettings(
           SOUND_SRCS.door.slam,
+          1,
           AUDIO_SETTING.DEFAULT,
         ),
         [SOUND_NAME.DOOR_NO_SQUEAK]: new AudioSettings(
           SOUND_SRCS.door.noSqueak,
+          1,
           AUDIO_SETTING.DEFAULT,
         ),
         [SOUND_NAME.DOOR_SQUEAK_1]: new AudioSettings(
           SOUND_SRCS.door.squeak1,
+          1,
           AUDIO_SETTING.DEFAULT,
         ),
         [SOUND_NAME.DOOR_SQUEAK_2]: new AudioSettings(
           SOUND_SRCS.door.squeak2,
+          1,
           AUDIO_SETTING.DEFAULT,
         ),
       },
@@ -588,6 +603,7 @@ class AudioContextAndScene {
         'type', // name
         new AudioSettings(
           SOUND_SRCS.type.fast,
+          1,
           AUDIO_SETTING.PARTIAL_PLAY,
           500,
           1000,
@@ -603,6 +619,7 @@ class AudioContextAndScene {
         'type', // name
         new AudioSettings(
           SOUND_SRCS.type.slow,
+          1,
           AUDIO_SETTING.PARTIAL_PLAY,
           500,
           1000,
@@ -619,6 +636,7 @@ class AudioContextAndScene {
         'page-flip', // name
         new AudioSettings(
           SOUND_SRCS.pageFlip.single,
+          1,
           AUDIO_SETTING.DEFAULT,
         ), // settings
         1, // relative frequency
@@ -631,6 +649,7 @@ class AudioContextAndScene {
         'single-click', // name
         new AudioSettings(
           SOUND_SRCS.click.single,
+          1,
           AUDIO_SETTING.INTERMITTENT,
           100,
           5000
@@ -643,6 +662,7 @@ class AudioContextAndScene {
         'double-click', // name
         new AudioSettings(
           SOUND_SRCS.click.double,
+          1,
           AUDIO_SETTING.INTERMITTENT,
           100,
           5000
@@ -665,12 +685,14 @@ class AudioContextAndScene {
       // add put laptop on table sound on start work
       audioProfile[SOUND_NAME.PLACE_LAPTOP] = new AudioSettings(
         SOUND_SRCS.preparation.placeLaptop,
+        1,
         AUDIO_SETTING.DEFAULT
       )
     }
     if (workSound.pageFlip) {
       audioProfile[SOUND_NAME.PLACE_BOOK] = new AudioSettings(
         SOUND_SRCS.preparation.placeBook,
+        1,
         AUDIO_SETTING.DEFAULT
       )
     }
@@ -680,10 +702,12 @@ class AudioContextAndScene {
       if (otherSound.zipUnzip === PERSON_SETTING.SPECIAL_SOUND.ZIP_UNZIP.default) {
         audioProfile[SOUND_NAME.ZIP] = new AudioSettings(
           SOUND_SRCS.preparation.zip,
+          1,
           AUDIO_SETTING.DEFAULT,
         );
         audioProfile[SOUND_NAME.UNZIP] = new AudioSettings(
           SOUND_SRCS.preparation.unzip,
+          1,
           AUDIO_SETTING.DEFAULT,
         );
       }
@@ -696,6 +720,7 @@ class AudioContextAndScene {
       }
       audioProfile[SOUND_NAME.FOOTSTEP] = new AudioSettings(
         SOUND_SRCS.footstep.boots,
+        1,
         AUDIO_SETTING.INTERMITTENT,
         footstepPeriod * 0.9,
         footstepPeriod * 0.2
@@ -704,6 +729,7 @@ class AudioContextAndScene {
       if (otherSound.sniffle === PERSON_SETTING.GENERAL_SOUND.SNIFFLE.default) {
         audioProfile[SOUND_NAME.SNIFFLE] = new AudioSettings(
           SOUND_SRCS.sniffle.default,
+          1,
           AUDIO_SETTING.INTERMITTENT,
           1000,
           60000
@@ -713,13 +739,17 @@ class AudioContextAndScene {
         const pause = 2000;
         const additionalRandomPause = 100000;
         let source;
+        let gain;
         if (otherSound.throatClear === PERSON_SETTING.GENERAL_SOUND.THROAT_CLEAR.male) {
           source = SOUND_SRCS.throatClear.male;
+          gain = 1;
         } else if (otherSound.throatClear === PERSON_SETTING.GENERAL_SOUND.THROAT_CLEAR.female) {
           source = SOUND_SRCS.throatClear.female;
+          gain = 1;
         }
         audioProfile[SOUND_NAME.THROAT_CLEAR] = new AudioSettings(
           source,
+          gain,
           AUDIO_SETTING.INTERMITTENT,
           pause,
           additionalRandomPause
@@ -729,13 +759,17 @@ class AudioContextAndScene {
         const pause = 30000;
         const additionalRandomPause = 180000;
         let source;
+        let gain;
         if (otherSound.cough === PERSON_SETTING.GENERAL_SOUND.COUGH.male) {
           source = SOUND_SRCS.cough.male;
+          gain = 1;
         } else if (otherSound.cough === PERSON_SETTING.GENERAL_SOUND.COUGH.female) {
           source = SOUND_SRCS.cough.female;
+          gain = 1;
         }
         audioProfile[SOUND_NAME.COUGH] = new AudioSettings(
           source,
+          gain,
           AUDIO_SETTING.INTERMITTENT,
           pause,
           additionalRandomPause
@@ -745,13 +779,17 @@ class AudioContextAndScene {
         const pause = 30000;
         const additionalRandomPause = 180000;
         let source;
+        let gain;
         if (otherSound.sneeze === PERSON_SETTING.GENERAL_SOUND.SNEEZE.male) {
           source = SOUND_SRCS.sneeze.male;
+          gain = 1;
         } else if (otherSound.sneeze === PERSON_SETTING.GENERAL_SOUND.SNEEZE.female) {
           source = SOUND_SRCS.sneeze.female;
+          gain = 1;
         }
         audioProfile[SOUND_NAME.SNEEZE] = new AudioSettings(
           source,
+          gain,
           AUDIO_SETTING.INTERMITTENT,
           pause,
           additionalRandomPause
