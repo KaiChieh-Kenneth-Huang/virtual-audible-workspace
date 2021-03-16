@@ -152,6 +152,7 @@ class SoundSource extends CanvasElement {
         audioSettings: audioSettings
       }
     } else {
+      console.log('loaded: ' + audioSettings.source);
       const audioCtx = this.audioContext;
       const myRequest = new Request(audioSettings.source);
     

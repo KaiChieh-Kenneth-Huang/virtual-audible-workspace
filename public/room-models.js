@@ -1,4 +1,4 @@
-var audioContext;
+var audioContext = new (window.AudioContext || window.webkitAudioContext);
 let canvasControl;
 let audioScene;
 let audioContextAndScene;
@@ -47,7 +47,7 @@ function updatePositions(elements) {
  * @private
  */
 function initAudio() {
-  audioContext = new (window.AudioContext || window.webkitAudioContext);
+  //audioContext = new (window.AudioContext || window.webkitAudioContext);
   // Initialize scene and create Source(s).
   audioScene = new ResonanceAudio(audioContext, {
     ambisonicOrder: 1,
@@ -203,14 +203,11 @@ const enterRoom = () => {
     // ),
   ];
   canvasControl.addElements(newElements);
-  // setTimeout(() => {
-  //   canvasControl.useElement(doorElement)
-  // }, 500);
-  //
-  setTimeout(() => {
+
+  setTimeout(() => { // selectRoomProperties can't be run right away otherwise it won't be applied
     selectRoomProperties();
-    //canvasControl.invokeCallback();
-  }, 2000)
+    canvasControl.useElement(doorElement);
+  }, 300);
 }
 
 const onLoad = function() {

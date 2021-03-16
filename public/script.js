@@ -1,11 +1,21 @@
 // preload audio
 var preloadedAudioBuffer = {};
-document.querySelector('#start').onclick = preloadAudioElements;
+preloadAudioElements();
 function preloadAudioElements() {
-    for (const src of flattenObjectToStringArray(SOUND_SRCS)) {
-        preloadAudioElement(src);
+  const sources = flattenObjectToUniqueStringArray(SOUND_SRCS);
+  const startTime = Date.now();
+  console.log('Begin preloading audio...');
+  for (const src of sources) {
+    preloadAudioElement(src);
+  }
+  const checkLoadComplete = setInterval(() => {
+    if (sources.length === Object.keys(preloadedAudioBuffer).length) {
+      const timeElapsed = (Date.now() - startTime) / 1000;
+      document.querySelector('#enter-room-btn').disabled = false;
+      console.log('Audio preloaded in ' + timeElapsed + 's.');
+      clearInterval(checkLoadComplete);
     }
-    console.log('preloaded');
+  }, 500);
 }
 
 function preloadAudioElement(src) {
@@ -33,17 +43,17 @@ function rotateCoordinates({x, y}, rotation) {
     return {x: x * cos - y * sin, y: x * sin + y * cos}
 }
 
-function flattenObjectToStringArray(obj) {
-    const arr = [];
+function flattenObjectToUniqueStringArray(obj) {
+    const set = new Set();
     const processObj = (obj) => {
       for (const key in obj) {
         if (typeof obj[key] === 'string') {
-          arr.push(obj[key]);
+          set.add(obj[key]);
         } else if (typeof obj[key] === 'object') {
           processObj(obj[key]);
         }
       }
     }
     processObj(obj);
-    return arr;
+    return Object.keys(set);
 }
