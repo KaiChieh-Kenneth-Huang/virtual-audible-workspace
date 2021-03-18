@@ -351,6 +351,16 @@ CanvasControl.prototype._cursorUpFunc = function(event) {
 
     const selectElement = (selectedElement) => {
       let actionDelay = 0;
+
+      if (selectedElement.constructor.name === 'Chair') {
+        if (selectedElement.state !== ELEMENT_STATE.AVAILABLE) {
+          return;
+        }
+        selectedElement.setState(ELEMENT_STATE.RESERVED);
+      } else if (selectedElement.constructor.name === 'Door') {
+        // don't need to do anything
+      }
+
       if(this.listener.itemInUse) {
         if (this.listener.itemInUse.constructor.name === 'Chair') {
           const itemInUse = this.listener.itemInUse;
@@ -370,13 +380,8 @@ CanvasControl.prototype._cursorUpFunc = function(event) {
       if (this.listener.state === ELEMENT_STATE.WORKING) {
         this.listener.setState(ELEMENT_STATE.PREPARING_TO_GO);
       }
-      if (selectedElement.constructor.name === 'Chair') {
-        selectedElement.setState(ELEMENT_STATE.RESERVED);
-        this.listener.itemInUse = selectedElement;
-      } else if (selectedElement.constructor.name === 'Door') {
-        // don't need to do anything
-        this.listener.itemInUse = selectedElement;
-      }
+      this.listener.itemInUse = selectedElement;
+      
       setTimeout(() => {
         startMoving();
       }, actionDelay);
