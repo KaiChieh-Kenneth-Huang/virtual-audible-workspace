@@ -224,7 +224,7 @@ class SoundSource extends CanvasElement {
   }
 
   getAudioDuration(key) {
-    return this.audioElements[key].buffer.duration;
+    return this.audioElements[key] ? this.audioElements[key].buffer.duration : 0;
   }
 
   setAudioStartTime(key, time) {
@@ -678,7 +678,9 @@ class AudioContextAndScene {
     if (workSound.pageFlip && !workSound.type && !workSound.click) {
       randAdditionalSwitchTaskPause = 100000;
     }
-    audioProfile[SOUND_GROUP_NAME.WORK] = new AudioGroup(workSounds, switchTaskPause, randAdditionalSwitchTaskPause);
+    if (workSounds.length) {
+      audioProfile[SOUND_GROUP_NAME.WORK] = new AudioGroup(workSounds, switchTaskPause, randAdditionalSwitchTaskPause);
+    }
     
     // create preparation sounds related to work
     if (workSound.type || workSound.click) {

@@ -72,33 +72,6 @@ const enterRoom = () => {
   );
   
   let canvas = document.getElementById('canvas');
-  // let listener = audioContextAndScene.makeNewPersonWithSettings(
-  //   ELEMENT_STATE.IDLE,
-  //   new PersonIcon('#666', '#3a3', 'ME'),
-  //   {x: DOOR_LOCATION.x + PERSON_SIZE, y: DOOR_LOCATION.y, z: 1},
-  //   90, // orientation; up is 0
-  //   { // person settings
-  //     workSound: {
-  //       type: PERSON_SETTING.WORK_SOUND.TYPE.slow,
-  //       pageFlip: PERSON_SETTING.WORK_SOUND.PAGE_FLIP.default,
-  //       click: PERSON_SETTING.WORK_SOUND.CLICK.default,
-  //     },
-  //     otherSound: { // otherSound,
-  //       zipUnzip: PERSON_SETTING.SPECIAL_SOUND.ZIP_UNZIP.default,
-  //       footstep: PERSON_SETTING.SPECIAL_SOUND.FOOTSTEP.fast,
-  //       sniffle: PERSON_SETTING.GENERAL_SOUND.SNIFFLE.default,
-  //       throatClear: PERSON_SETTING.GENERAL_SOUND.THROAT_CLEAR.female,
-  //       cough: PERSON_SETTING.GENERAL_SOUND.COUGH.female,
-  //       sneeze: PERSON_SETTING.GENERAL_SOUND.SNEEZE.female,
-  //     },
-  //     habbit: { // habbit
-  //       chairSlideSound: PERSON_SETTING.HABBIT.CHAIR_SLIDE_SOUND.fast,
-  //       doorOpenCloseSound: PERSON_SETTING.HABBIT.DOOR_OPEN_CLOSE_SOUND.gentle,
-  //       moveOnChair: true,
-  //     }
-  //   },
-  //   true // is listener
-  // );
 
   let listener = audioContextAndScene.makeNewPersonWithSettings(
     ELEMENT_STATE.IDLE,
@@ -112,17 +85,17 @@ const enterRoom = () => {
         // click: PERSON_SETTING.WORK_SOUND.CLICK.default,
       },
       otherSound: { // otherSound,
-        zipUnzip: PERSON_SETTING.SPECIAL_SOUND.ZIP_UNZIP.default,
-        footstep: PERSON_SETTING.SPECIAL_SOUND.FOOTSTEP.fast,
-        sniffle: PERSON_SETTING.GENERAL_SOUND.SNIFFLE.default,
-        throatClear: PERSON_SETTING.GENERAL_SOUND.THROAT_CLEAR.female,
-        cough: PERSON_SETTING.GENERAL_SOUND.COUGH.female,
-        sneeze: PERSON_SETTING.GENERAL_SOUND.SNEEZE.female,
+        // zipUnzip: PERSON_SETTING.SPECIAL_SOUND.ZIP_UNZIP.default,
+        // footstep: PERSON_SETTING.SPECIAL_SOUND.FOOTSTEP.fast,
+        // sniffle: PERSON_SETTING.GENERAL_SOUND.SNIFFLE.default,
+        // throatClear: PERSON_SETTING.GENERAL_SOUND.THROAT_CLEAR.female,
+        // cough: PERSON_SETTING.GENERAL_SOUND.COUGH.female,
+        // sneeze: PERSON_SETTING.GENERAL_SOUND.SNEEZE.female,
       },
       habbit: { // habbit
         chairSlideSound: PERSON_SETTING.HABBIT.CHAIR_SLIDE_SOUND.fast,
         doorOpenCloseSound: PERSON_SETTING.HABBIT.DOOR_OPEN_CLOSE_SOUND.gentle,
-        moveOnChair: true,
+        // moveOnChair: true,
       }
     },
     true // is listener
