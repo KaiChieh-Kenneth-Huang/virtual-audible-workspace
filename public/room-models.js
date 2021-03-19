@@ -72,16 +72,44 @@ const enterRoom = () => {
   );
   
   let canvas = document.getElementById('canvas');
+  // let listener = audioContextAndScene.makeNewPersonWithSettings(
+  //   ELEMENT_STATE.IDLE,
+  //   new PersonIcon('#666', '#3a3', 'ME'),
+  //   {x: DOOR_LOCATION.x + PERSON_SIZE, y: DOOR_LOCATION.y, z: 1},
+  //   90, // orientation; up is 0
+  //   { // person settings
+  //     workSound: {
+  //       type: PERSON_SETTING.WORK_SOUND.TYPE.slow,
+  //       pageFlip: PERSON_SETTING.WORK_SOUND.PAGE_FLIP.default,
+  //       click: PERSON_SETTING.WORK_SOUND.CLICK.default,
+  //     },
+  //     otherSound: { // otherSound,
+  //       zipUnzip: PERSON_SETTING.SPECIAL_SOUND.ZIP_UNZIP.default,
+  //       footstep: PERSON_SETTING.SPECIAL_SOUND.FOOTSTEP.fast,
+  //       sniffle: PERSON_SETTING.GENERAL_SOUND.SNIFFLE.default,
+  //       throatClear: PERSON_SETTING.GENERAL_SOUND.THROAT_CLEAR.female,
+  //       cough: PERSON_SETTING.GENERAL_SOUND.COUGH.female,
+  //       sneeze: PERSON_SETTING.GENERAL_SOUND.SNEEZE.female,
+  //     },
+  //     habbit: { // habbit
+  //       chairSlideSound: PERSON_SETTING.HABBIT.CHAIR_SLIDE_SOUND.fast,
+  //       doorOpenCloseSound: PERSON_SETTING.HABBIT.DOOR_OPEN_CLOSE_SOUND.gentle,
+  //       moveOnChair: true,
+  //     }
+  //   },
+  //   true // is listener
+  // );
+
   let listener = audioContextAndScene.makeNewPersonWithSettings(
     ELEMENT_STATE.IDLE,
     new PersonIcon('#666', '#3a3', 'ME'),
     {x: DOOR_LOCATION.x + PERSON_SIZE, y: DOOR_LOCATION.y, z: 1},
     90, // orientation; up is 0
-    { // person settings
+    {
       workSound: {
-        type: PERSON_SETTING.WORK_SOUND.TYPE.slow,
-        pageFlip: PERSON_SETTING.WORK_SOUND.PAGE_FLIP.default,
-        click: PERSON_SETTING.WORK_SOUND.CLICK.default,
+        // type: PERSON_SETTING.WORK_SOUND.TYPE.slow,
+        // pageFlip: PERSON_SETTING.WORK_SOUND.PAGE_FLIP.default,
+        // click: PERSON_SETTING.WORK_SOUND.CLICK.default,
       },
       otherSound: { // otherSound,
         zipUnzip: PERSON_SETTING.SPECIAL_SOUND.ZIP_UNZIP.default,
@@ -100,43 +128,6 @@ const enterRoom = () => {
     true // is listener
   );
 
-  audioContextAndScene.getNewPerson(
-    ELEMENT_STATE.IDLE,
-    new PersonIcon('#666', '#3a3', 'ME'), // image
-    {x: DOOR_LOCATION.x + PERSON_SIZE, y: DOOR_LOCATION.y, z: 1}, // position
-    90, // orientation; up is 0
-    { // sound profile
-      [SOUND_NAME.FOOTSTEP]: new AudioSettings(
-        SOUND_SRCS.footstep.boots,
-        AUDIO_SETTING.INTERMITTENT,
-        700,
-        0
-      ),
-      [SOUND_NAME.ZIP]: new AudioSettings(
-        SOUND_SRCS.preparation.zip,
-        AUDIO_SETTING.DEFAULT,
-      ),
-      [SOUND_NAME.UNZIP]: new AudioSettings(
-        SOUND_SRCS.preparation.unzip,
-        AUDIO_SETTING.DEFAULT,
-      ),
-      [SOUND_NAME.PLACE_BOOK]: new AudioSettings(
-        SOUND_SRCS.preparation.placeBook,
-        AUDIO_SETTING.DEFAULT,
-      ),
-      [SOUND_NAME.PLACE_LAPTOP]: new AudioSettings(
-        SOUND_SRCS.preparation.placeLaptop,
-        AUDIO_SETTING.DEFAULT,
-      ),
-    },
-    { // habbits
-      chairSlideSound: SOUND_NAME.CHAIR_SLIDE_SLOW,
-      doorOpenCloseSound: SOUND_NAME.DOOR_SLAM,
-      moveOnChair: true,
-    },
-    true // isListener
-  );
-
   canvasControl = new CanvasControl(canvas, listener, updatePositions);
   const doorElement = audioContextAndScene.getNewDoor(ELEMENT_STATE.AVAILABLE, {...DOOR_LOCATION, z: 1}, 0);
   // setup initial scene
@@ -144,7 +135,7 @@ const enterRoom = () => {
     ...audioContextAndScene.getCluster({x: 350, y: 750}, 'round', 3, 0, [
       {
         locationIndex: 0,
-        icon: new PersonIcon('#666', '#a88', 'JD'),
+        icon: new PersonIcon('#666', '#999', 'JD'),
         personSettings: {
           workSound: {
             type: PERSON_SETTING.WORK_SOUND.TYPE.fast,
@@ -161,6 +152,31 @@ const enterRoom = () => {
           },
           habbit: { // habbit
             chairSlideSound: PERSON_SETTING.HABBIT.CHAIR_SLIDE_SOUND.slow,
+            doorOpenCloseSound: PERSON_SETTING.HABBIT.DOOR_OPEN_CLOSE_SOUND.gentle,
+            moveOnChair: true,
+          }
+        },
+        isListener: false
+      },
+      {
+        locationIndex: 1,
+        icon: new PersonIcon('#666', '#999', 'JE'),
+        personSettings: {
+          workSound: {
+            type: PERSON_SETTING.WORK_SOUND.TYPE.slow,
+            pageFlip: PERSON_SETTING.WORK_SOUND.PAGE_FLIP.default,
+            click: PERSON_SETTING.WORK_SOUND.CLICK.default,
+          },
+          otherSound: { // otherSound,
+            zipUnzip: PERSON_SETTING.SPECIAL_SOUND.ZIP_UNZIP.default,
+            footstep: PERSON_SETTING.SPECIAL_SOUND.FOOTSTEP.fast,
+            sniffle: PERSON_SETTING.GENERAL_SOUND.SNIFFLE.default,
+            throatClear: PERSON_SETTING.GENERAL_SOUND.THROAT_CLEAR.female,
+            cough: PERSON_SETTING.GENERAL_SOUND.COUGH.female,
+            sneeze: PERSON_SETTING.GENERAL_SOUND.SNEEZE.female,
+          },
+          habbit: { // habbit
+            chairSlideSound: PERSON_SETTING.HABBIT.CHAIR_SLIDE_SOUND.fast,
             doorOpenCloseSound: PERSON_SETTING.HABBIT.DOOR_OPEN_CLOSE_SOUND.gentle,
             moveOnChair: true,
           }

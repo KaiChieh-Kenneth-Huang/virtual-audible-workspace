@@ -719,7 +719,7 @@ class AudioContextAndScene {
         footstepPeriod = 700;
       }
       audioProfile[SOUND_NAME.FOOTSTEP] = new AudioSettings(
-        SOUND_SRCS.footstep.boots,
+        SOUND_SRCS.footstep.softSneakers,
         1,
         AUDIO_SETTING.INTERMITTENT,
         footstepPeriod * 0.9,
@@ -737,7 +737,7 @@ class AudioContextAndScene {
       }
       if (otherSound.throatClear) {
         const pause = 2000;
-        const additionalRandomPause = 100000;
+        const additionalRandomPause = 200000;
         let source;
         let gain;
         if (otherSound.throatClear === PERSON_SETTING.GENERAL_SOUND.THROAT_CLEAR.male) {
@@ -757,7 +757,7 @@ class AudioContextAndScene {
       }
       if (otherSound.cough) {
         const pause = 30000;
-        const additionalRandomPause = 180000;
+        const additionalRandomPause = 360000;
         let source;
         let gain;
         if (otherSound.cough === PERSON_SETTING.GENERAL_SOUND.COUGH.male) {
@@ -777,7 +777,7 @@ class AudioContextAndScene {
       }
       if (otherSound.sneeze) {
         const pause = 30000;
-        const additionalRandomPause = 180000;
+        const additionalRandomPause = 360000;
         let source;
         let gain;
         if (otherSound.sneeze === PERSON_SETTING.GENERAL_SOUND.SNEEZE.male) {

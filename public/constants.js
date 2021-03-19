@@ -19,6 +19,7 @@ const SOUND_SRCS = {
   },
   footstep: {
     boots: SOUNDS_PATH + ENVIRONMENT_PATH + 'single_footstep_boots.wav',
+    softSneakers: SOUNDS_PATH + ENVIRONMENT_PATH + 'single_footstep_fd.mp3'
   },
   preparation: {
     zip: SOUNDS_PATH + ENVIRONMENT_PATH + 'zipping.mp3',
