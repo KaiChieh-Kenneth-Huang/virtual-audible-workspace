@@ -289,7 +289,7 @@ CanvasControl.prototype._cursorUpFunc = function(event) {
   let cursorPosition = this.getCursorPosition(event);
   let selectedElement = this.getNearestElement(cursorPosition);
   
-  const moveStepSize = 1;
+  const moveStepSize = 2;
 
   if (selectedElement) {
     // useElement called when the person reaches selectedElement
