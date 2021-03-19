@@ -130,7 +130,7 @@ const TABLE_HEIGHT = 0.5;
 const PERSON_SIZE = 60;
 
 const ROOM_DIMENSIONS = {
-  width: 20, height: 3, depth: 10,
+  width: 40, height: 3, depth: 20,
 }
 
 const MATERIALS = {
