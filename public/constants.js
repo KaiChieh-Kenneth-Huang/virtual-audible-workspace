@@ -119,18 +119,18 @@ const DOOR_WIDTH = 20;
 const DOOR_HEIGHT = 100;
 const DOOR_LOCATION = {x: DOOR_WIDTH / 2 , y: MAX_CANVAS_HEIGHT / 3}
 
-const CHAIR_WIDTH = 120;
-const CHAIR_LENGTH = 120;
+const CHAIR_WIDTH = 60;
+const CHAIR_LENGTH = 60;
 const CHAIR_HEIGHT = 0.5;
-const ROUND_TABLE_SIZE = 250;
-const TABLE_WIDTH = 250;
-const TABLE_LENGTH = 250;
+const ROUND_TABLE_SIZE = 100;
+const TABLE_WIDTH = 125;
+const TABLE_LENGTH = 125;
 const TABLE_HEIGHT = 0.5;
 
 const PERSON_SIZE = 60;
 
 const ROOM_DIMENSIONS = {
-  width: 40, height: 3, depth: 20,
+  width: 80, height: 3, depth: 50,
 }
 
 const MATERIALS = {

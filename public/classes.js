@@ -519,27 +519,27 @@ class Door extends SoundSource {
       {
         [SOUND_NAME.DOOR_GENTLE]: new AudioSettings(
           SOUND_SRCS.door.gentle,
-          1,
+          5,
           AUDIO_SETTING.DEFAULT,
         ),
         [SOUND_NAME.DOOR_SLAM]: new AudioSettings(
           SOUND_SRCS.door.slam,
-          1,
+          5,
           AUDIO_SETTING.DEFAULT,
         ),
         [SOUND_NAME.DOOR_NO_SQUEAK]: new AudioSettings(
           SOUND_SRCS.door.noSqueak,
-          1,
+          5,
           AUDIO_SETTING.DEFAULT,
         ),
         [SOUND_NAME.DOOR_SQUEAK_1]: new AudioSettings(
           SOUND_SRCS.door.squeak1,
-          1,
+          5,
           AUDIO_SETTING.DEFAULT,
         ),
         [SOUND_NAME.DOOR_SQUEAK_2]: new AudioSettings(
           SOUND_SRCS.door.squeak2,
-          1,
+          5,
           AUDIO_SETTING.DEFAULT,
         ),
       },
@@ -595,91 +595,94 @@ class AudioContextAndScene {
     const workSounds = [];
     const audioProfile = {};
     const habbits = {};
+    const gainCoefficient = isListener ? 1 : 1;
 
     // create work sounds
-    const workSoundConsts = PERSON_SETTING.WORK_SOUND;
-    if (workSound.type === workSoundConsts.TYPE.fast) {
-      workSounds.push(new AudioGroupWrapper(
-        'type', // name
-        new AudioSettings(
-          SOUND_SRCS.type.fast,
-          1,
-          AUDIO_SETTING.PARTIAL_PLAY,
-          500,
-          1000,
-          500,
-          1000
-        ), // settings
-        10, // relative frequency
-        5000, // duration
-        5000, // random additional duration
-      ));
-    } else if (workSound.type === workSoundConsts.TYPE.slow) {
-      workSounds.push(new AudioGroupWrapper(
-        'type', // name
-        new AudioSettings(
-          SOUND_SRCS.type.slow,
-          1,
-          AUDIO_SETTING.PARTIAL_PLAY,
-          500,
-          1000,
-          1000,
-          2000
-        ), // settings
-        10, // relative frequency
-        5000, // duration
-        5000, // random additional duration
-      ));
-    }
-    if (workSound.pageFlip === workSoundConsts.PAGE_FLIP.default) {
-      workSounds.push(new AudioGroupWrapper(
-        'page-flip', // name
-        new AudioSettings(
-          SOUND_SRCS.pageFlip.single,
-          1,
-          AUDIO_SETTING.DEFAULT,
-        ), // settings
-        1, // relative frequency
-        2000, // duration
-        0, // random additional duration
-      ));
-    }
-    if (workSound.click === workSoundConsts.CLICK.default) {
-      workSounds.push(new AudioGroupWrapper(
-        'single-click', // name
-        new AudioSettings(
-          SOUND_SRCS.click.single,
-          1,
-          AUDIO_SETTING.INTERMITTENT,
-          100,
-          5000
-        ), // settings
-        workSound.type ? 5 : 10, // relative frequency
-        100, // duration
-        5000, // random additional duration
-      ));
-      workSounds.push(new AudioGroupWrapper(
-        'double-click', // name
-        new AudioSettings(
-          SOUND_SRCS.click.double,
-          1,
-          AUDIO_SETTING.INTERMITTENT,
-          100,
-          5000
-        ), // settings
-        1, // relative frequency
-        200, // duration
-        3000, // random additional duration
-      ));
-    }
-    // configure switch task pause for work sounds
-    let switchTaskPause = 1000;
-    let randAdditionalSwitchTaskPause = 2000;
-    if (workSound.pageFlip && !workSound.type && !workSound.click) {
-      randAdditionalSwitchTaskPause = 100000;
-    }
-    if (workSounds.length) {
-      audioProfile[SOUND_GROUP_NAME.WORK] = new AudioGroup(workSounds, switchTaskPause, randAdditionalSwitchTaskPause);
+    if (!isListener) {
+      const workSoundConsts = PERSON_SETTING.WORK_SOUND;
+      if (workSound.type === workSoundConsts.TYPE.fast) {
+        workSounds.push(new AudioGroupWrapper(
+          'type', // name
+          new AudioSettings(
+            SOUND_SRCS.type.fast,
+            1 * gainCoefficient,
+            AUDIO_SETTING.PARTIAL_PLAY,
+            500,
+            1000,
+            500,
+            1000
+          ), // settings
+          10, // relative frequency
+          5000, // duration
+          5000, // random additional duration
+        ));
+      } else if (workSound.type === workSoundConsts.TYPE.slow) {
+        workSounds.push(new AudioGroupWrapper(
+          'type', // name
+          new AudioSettings(
+            SOUND_SRCS.type.slow,
+            1 * gainCoefficient,
+            AUDIO_SETTING.PARTIAL_PLAY,
+            500,
+            1000,
+            1000,
+            2000
+          ), // settings
+          10, // relative frequency
+          5000, // duration
+          5000, // random additional duration
+        ));
+      }
+      if (workSound.pageFlip === workSoundConsts.PAGE_FLIP.default) {
+        workSounds.push(new AudioGroupWrapper(
+          'page-flip', // name
+          new AudioSettings(
+            SOUND_SRCS.pageFlip.single,
+            1 * gainCoefficient,
+            AUDIO_SETTING.DEFAULT,
+          ), // settings
+          1, // relative frequency
+          2000, // duration
+          0, // random additional duration
+        ));
+      }
+      if (workSound.click === workSoundConsts.CLICK.default) {
+        workSounds.push(new AudioGroupWrapper(
+          'single-click', // name
+          new AudioSettings(
+            SOUND_SRCS.click.single,
+            1 * gainCoefficient,
+            AUDIO_SETTING.INTERMITTENT,
+            100,
+            5000
+          ), // settings
+          workSound.type ? 5 : 10, // relative frequency
+          100, // duration
+          5000, // random additional duration
+        ));
+        workSounds.push(new AudioGroupWrapper(
+          'double-click', // name
+          new AudioSettings(
+            SOUND_SRCS.click.double,
+            1 * gainCoefficient,
+            AUDIO_SETTING.INTERMITTENT,
+            100,
+            5000
+          ), // settings
+          1, // relative frequency
+          200, // duration
+          3000, // random additional duration
+        ));
+      }
+      // configure switch task pause for work sounds
+      let switchTaskPause = 1000;
+      let randAdditionalSwitchTaskPause = 2000;
+      if (workSound.pageFlip && !workSound.type && !workSound.click) {
+        randAdditionalSwitchTaskPause = 100000;
+      }
+      if (workSounds.length) {
+        audioProfile[SOUND_GROUP_NAME.WORK] = new AudioGroup(workSounds, switchTaskPause, randAdditionalSwitchTaskPause);
+      }
     }
     
     // create preparation sounds related to work
@@ -687,14 +690,14 @@ class AudioContextAndScene {
       // add put laptop on table sound on start work
       audioProfile[SOUND_NAME.PLACE_LAPTOP] = new AudioSettings(
         SOUND_SRCS.preparation.placeLaptop,
-        1,
+        1 * gainCoefficient,
         AUDIO_SETTING.DEFAULT
       )
     }
     if (workSound.pageFlip) {
       audioProfile[SOUND_NAME.PLACE_BOOK] = new AudioSettings(
         SOUND_SRCS.preparation.placeBook,
-        1,
+        1 * gainCoefficient,
         AUDIO_SETTING.DEFAULT
       )
     }
@@ -704,12 +707,12 @@ class AudioContextAndScene {
       if (otherSound.zipUnzip === PERSON_SETTING.SPECIAL_SOUND.ZIP_UNZIP.default) {
         audioProfile[SOUND_NAME.ZIP] = new AudioSettings(
           SOUND_SRCS.preparation.zip,
-          0.5,
+          0.5 * gainCoefficient,
           AUDIO_SETTING.DEFAULT,
         );
         audioProfile[SOUND_NAME.UNZIP] = new AudioSettings(
           SOUND_SRCS.preparation.unzip,
-          0.5,
+          0.5 * gainCoefficient,
           AUDIO_SETTING.DEFAULT,
         );
       }
@@ -722,7 +725,7 @@ class AudioContextAndScene {
       }
       audioProfile[SOUND_NAME.FOOTSTEP] = new AudioSettings(
         SOUND_SRCS.footstep.softSneakers,
-        1,
+        1 * gainCoefficient,
         AUDIO_SETTING.INTERMITTENT,
         footstepPeriod * 0.9,
         footstepPeriod * 0.2
@@ -731,7 +734,7 @@ class AudioContextAndScene {
       if (otherSound.sniffle === PERSON_SETTING.GENERAL_SOUND.SNIFFLE.default) {
         audioProfile[SOUND_NAME.SNIFFLE] = new AudioSettings(
           SOUND_SRCS.sniffle.default,
-          1,
+          1 * gainCoefficient,
           AUDIO_SETTING.INTERMITTENT,
           1000,
           60000
@@ -747,11 +750,11 @@ class AudioContextAndScene {
           gain = 1;
         } else if (otherSound.throatClear === PERSON_SETTING.GENERAL_SOUND.THROAT_CLEAR.female) {
           source = SOUND_SRCS.throatClear.female;
-          gain = 1;
+          gain = 0.1;
         }
         audioProfile[SOUND_NAME.THROAT_CLEAR] = new AudioSettings(
           source,
-          gain,
+          gain * gainCoefficient,
           AUDIO_SETTING.INTERMITTENT,
           pause,
           additionalRandomPause
@@ -767,11 +770,11 @@ class AudioContextAndScene {
           gain = 1;
         } else if (otherSound.cough === PERSON_SETTING.GENERAL_SOUND.COUGH.female) {
           source = SOUND_SRCS.cough.female;
-          gain = 1;
+          gain = 0.2;
         }
         audioProfile[SOUND_NAME.COUGH] = new AudioSettings(
           source,
-          gain,
+          gain * gainCoefficient,
           AUDIO_SETTING.INTERMITTENT,
           pause,
           additionalRandomPause
@@ -784,14 +787,14 @@ class AudioContextAndScene {
         let gain;
         if (otherSound.sneeze === PERSON_SETTING.GENERAL_SOUND.SNEEZE.male) {
           source = SOUND_SRCS.sneeze.male;
-          gain = 1;
+          gain = 0.2;
         } else if (otherSound.sneeze === PERSON_SETTING.GENERAL_SOUND.SNEEZE.female) {
           source = SOUND_SRCS.sneeze.female;
           gain = 1;
         }
         audioProfile[SOUND_NAME.SNEEZE] = new AudioSettings(
           source,
-          gain,
+          gain * gainCoefficient,
           AUDIO_SETTING.INTERMITTENT,
           pause,
           additionalRandomPause
