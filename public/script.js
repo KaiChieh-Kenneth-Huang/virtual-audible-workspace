@@ -93,7 +93,7 @@ bkgSoundSwitch.style.opacity = 0.3;
 bkgSoundSwitch.style.cursor = 'not-allowed';
 bkgSoundSwitch.dataset.loading = 'loading';
 
-document.onload = () => {
+window.onload = () => {
   preloadAudioElements(flattenObjectToUniqueStringArray(BACKGROUND_SOUND_SRCS), preloadedBackgroundAudioBuffer, backgroundSoundsReady,'background-sounds');
 };
 
