@@ -1,6 +1,7 @@
 const SOUNDS_PATH = 'resources/sounds/';
 const ENVIRONMENT_PATH = 'environment related human sounds/'
 const INTRINSIC_PATH = 'intrinsic human sounds/'
+const BACKGROUND_PATH = 'background sounds/'
 const WORK_PATH = 'work sounds/'
 const SOUND_SRCS = {
   chair: {
@@ -58,6 +59,13 @@ const SOUND_SRCS = {
     single: SOUNDS_PATH + WORK_PATH + 'single_page_flip.mp3',
     multiple: SOUNDS_PATH + WORK_PATH + 'page_flips.mp3',
   }
+}
+
+const BACKGROUND_SOUND_SRCS = {
+  nowhere: SOUNDS_PATH + BACKGROUND_PATH + 'nowhere.mp3',
+  people: SOUNDS_PATH + BACKGROUND_PATH + 'people.mp3',
+  urban: SOUNDS_PATH + BACKGROUND_PATH + 'urban.mp3',
+  nature: SOUNDS_PATH + BACKGROUND_PATH + 'nature.mp3',
 }
 
 const PERSON_SETTING = {
@@ -207,3 +215,7 @@ const SOUND_NAME = {
 const SOUND_GROUP_NAME = {
   WORK: 'work-sounds'
 }
+
+// image paths
+const MUTED_ICON_PATH = '/resources/img/sound off.svg';
+const UNMUTED_ICON_PATH = '/resources/img/sound on.svg';

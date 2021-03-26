@@ -707,12 +707,12 @@ class AudioContextAndScene {
       if (otherSound.zipUnzip === PERSON_SETTING.SPECIAL_SOUND.ZIP_UNZIP.default) {
         audioProfile[SOUND_NAME.ZIP] = new AudioSettings(
           SOUND_SRCS.preparation.zip,
-          0.5 * gainCoefficient,
+          0.3 * gainCoefficient,
           AUDIO_SETTING.DEFAULT,
         );
         audioProfile[SOUND_NAME.UNZIP] = new AudioSettings(
           SOUND_SRCS.preparation.unzip,
-          0.5 * gainCoefficient,
+          0.3 * gainCoefficient,
           AUDIO_SETTING.DEFAULT,
         );
       }
