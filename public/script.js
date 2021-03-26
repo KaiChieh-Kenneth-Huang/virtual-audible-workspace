@@ -19,7 +19,7 @@ const pages = {
   setup: 'setup-page',
   room: 'room-page'
 }
-var curPage = pages.setup;
+var curPage = pages.landing;
 
 const playBackgroundSound = (key) => {
   const randStartTime = Math.random() * backgrounAudioElements[key].buffer.duration;
