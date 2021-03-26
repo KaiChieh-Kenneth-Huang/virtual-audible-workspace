@@ -2,10 +2,13 @@
   font-family: 'Lato', 'Roboto';
 }
 
-input {
+#initials {
   border: none;
   border-bottom: solid 1px;
   text-align: center;
+}
+
+#page-wrapper {
 }
 
 #landing-page {
@@ -13,6 +16,24 @@ input {
   min-height: 100vh;
   width: 100%;
   padding: 20px;
+}
+
+#setup-page {
+  padding: 80px 60px 60px 60px;
+}
+
+#setup-page h6 {
+  color: #1266F1;
+  margin: 10px 0 20px 0;
+}
+
+#setup-page h7 {
+  font-weight: bold;
+  margin: 0px 0 10px 0;
+}
+
+#room-page {
+
 }
 
 #background-sounds-spinner {
@@ -33,6 +54,39 @@ input {
 .custom-primary-btn {
   padding-left: 30px;
   padding-right: 30px;
+}
+
+.capsule {
+  padding: 5px 10px;
+  font-size: smaller;
+  font-weight: bold;
+  color: #fff;
+  border-radius: 50px;
+  margin-right: 10px;
+}
+
+.toggle-group {
+  margin-bottom: 20px;
+}
+
+.toggle-container {
+  margin-bottom: 20px;
+}
+
+.radio-container {
+  margin: 0 10px 10px 10px;
+  display: inline-block;
+}
+
+.description {
+  font-size: smaller;
+}
+
+.title-wrapper {
+  margin: 20px 0 20px 0;
+}
+.section {
+  margin: 5px 0;
 }
 
 .center-box {
@@ -65,4 +119,10 @@ input {
 .select-from-images > li {
   padding: 10px 20px;
   cursor: pointer;
+}
+
+.back-btn {
+  position: absolute;
+  top: 20px;
+  left: 30px;
 }

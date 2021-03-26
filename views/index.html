@@ -23,7 +23,7 @@
     <link id="favicon" rel="icon" href="/resources/img/FAVICON.ico" type="image/x-icon">
   </head>
   <body>
-    <div class="">
+    <div id="page-wrapper">
         <div id="landing-page">
           <div class="center-box">
             <div class="pg-1-row">
@@ -66,12 +66,260 @@
             </div>
           </div>
         </div>
-        <div id="setup-page" class="col-lg-5 mb-2" style="display: none">
-          <h1>Virtual Workspace</h1>
-          <button id="enter-room-btn" disabled>Enter Room</button>
-          <button id="pg-2-back-btn" class="btn btn-primary custom-primary-btn">Back</button>
+        <div id="setup-page" class="container-fluid">
+          <h1>Create your sound avatar</h1>
+          <br/>
+          <div class="row">
+            <div class="col-md-9">
+              <!-- work sounds title -->
+              <div class="row">
+                <div class="col-md-8">
+                  <div class="title-wrapper">
+                    <h5>Work sounds (required)</h5>
+                    <span class="capsule bg-warning">NOTE</span>
+                    <span class="description"> These sounds would be audible only to others in the space</span>
+                  </div>
+                </div>
+              </div>
+              <!-- work sounds -->
+              <div class="row">
+                <div class="col-md-8">
+                  <div class="section">
+                    <!-- Typing -->
+                    <div class="toggle-group">
+                      <div class="form-check form-switch toggle-container">
+                        <input class="form-check-input" type="checkbox" id="typing"/>
+                        <label class="form-check-label" for="typing">Typing</label>
+                      </div>
+                      <div class="form-check radio-container">
+                        <input
+                          class="form-check-input"
+                          type="radio"
+                          name="typing"
+                          id="typing-slow"
+                          value="slow"
+                          checked
+                        />
+                        <label class="form-check-label" for="typing-slow">Slow and deliberate</label>
+                      </div>
+                      <div class="form-check radio-container">
+                        <input
+                          class="form-check-input"
+                          type="radio"
+                          name="typing"
+                          id="typing-fast"
+                          value="fast"
+                        />
+                        <label class="form-check-label" for="typing-fast">Fast and relentless</label>
+                      </div>
+                    </div>
+                    <!-- Clicking -->
+                    <div class="form-check form-switch toggle-container">
+                      <input class="form-check-input" type="checkbox" id="clicking"/>
+                      <label class="form-check-label" for="clicking">Clicking</label>
+                    </div>
+                    <!-- Reading -->
+                    <div class="form-check form-switch toggle-container">
+                      <input class="form-check-input" type="checkbox" id="reading"/>
+                      <label class="form-check-label" for="reading">Reading</label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!-- non-work sounds title-->
+              <div class="row">
+                <div class="col-md-8">
+                  <div class="title-wrapper">
+                    <h5>Non-work sounds (optional)</h5>
+                    <span class="capsule bg-warning">NOTE</span>
+                    <span class="description"> These sounds would be audible to you and others in the space</span>
+                  </div>
+                </div>
+              </div>
+              <!-- non-work sounds-->
+              <div class="row">
+                <div class="col-md-7">
+                  <!-- Non-event related sounds title-->
+                  <div class="row">
+                    <h6>Non-event related sounds (auto-generated occasionally)</h6>
+                  </div>
+                  <div class="row">
+                    <div class="section">
+                      <!-- Sniffle -->
+                      <div class="form-check form-switch toggle-container">
+                        <input class="form-check-input" type="checkbox" id="sniffle"/>
+                        <label class="form-check-label" for="sniffle">Sniffle</label>
+                      </div>
+                      <!-- Movement on chair -->
+                      <div class="form-check form-switch toggle-container">
+                        <input class="form-check-input" type="checkbox" id="movement-on-chair"/>
+                        <label class="form-check-label" for="movement-on-chair">Movement on chair</label>
+                      </div>
+                    </div>
+                    <div class="section">
+                      <div class="section">
+                        <span class="me-3">Select pitch for the following</span>
+                        <div class="form-check radio-container">
+                          <input
+                            class="form-check-input"
+                            type="radio"
+                            name="pitch"
+                            id="pitch-lower"
+                            value="lower"
+                            checked
+                          />
+                          <label class="form-check-label" for="pitch-lower">Lower</label>
+                        </div>
+                        <div class="form-check radio-container">
+                          <input
+                            class="form-check-input"
+                            type="radio"
+                            name="pitch"
+                            id="pitch-higher"
+                            value="higher"
+                          />
+                          <label class="form-check-label" for="pitch-higher">Higher</label>
+                        </div>
+                      </div>
+                      <!-- Cough -->
+                      <div class="form-check form-switch toggle-container">
+                        <input class="form-check-input" type="checkbox" id="cough"/>
+                        <label class="form-check-label" for="cough">Cough</label>
+                      </div>
+                      <!-- sneeze -->
+                      <div class="form-check form-switch toggle-container">
+                        <input class="form-check-input" type="checkbox" id="sneeze"/>
+                        <label class="form-check-label" for="sneeze">Sneeze</label>
+                      </div>
+                      <!-- throat-clear -->
+                      <div class="form-check form-switch toggle-container">
+                        <input class="form-check-input" type="checkbox" id="throat-clear"/>
+                        <label class="form-check-label" for="throat-clear">Throat clear</label>
+                      </div>
+                      
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-5">
+                  <!-- event related sounds title-->
+                  <div class="row">
+                    <h6>Event related sounds (action based)</h6>
+                  </div>
+                  <!-- foot steps -->
+                  <div class="row">
+                    <h7>Footsteps in the space</h7>
+                  </div>
+                  <div class="row mb-3">
+                    <div class="col-md-6">
+                      <div class="form-check radio-container">
+                        <input
+                          class="form-check-input"
+                          type="radio"
+                          name="footsteps"
+                          id="footsteps-slow"
+                          value="slow"
+                          checked
+                        />
+                        <label class="form-check-label" for="footsteps-slow">Slow</label>
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="form-check radio-container">
+                        <input
+                          class="form-check-input"
+                          type="radio"
+                          name="footsteps"
+                          id="footsteps-fast"
+                          value="fast"
+                        />
+                        <label class="form-check-label" for="footsteps-fast">Fast</label>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- door opening/closing -->
+                  <div class="row">
+                    <h7>Door opening/closing</h7>
+                  </div>
+                  <div class="row mb-3">
+                    <div class="col-md-6">
+                      <div class="form-check radio-container">
+                        <input
+                          class="form-check-input"
+                          type="radio"
+                          name="door"
+                          id="door-gentle"
+                          value="gentle"
+                          checked
+                        />
+                        <label class="form-check-label" for="door-gentle">Gentle</label>
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="form-check radio-container">
+                        <input
+                          class="form-check-input"
+                          type="radio"
+                          name="door"
+                          id="door-hard"
+                          value="hard"
+                        />
+                        <label class="form-check-label" for="door-hard">Hard</label>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- Chair sliding -->
+                  <div class="row">
+                    <h7>Chair sliding</h7>
+                  </div>
+                  <div class="row mb-3">
+                    <div class="col-md-6">
+                      <div class="form-check radio-container">
+                        <input
+                          class="form-check-input"
+                          type="radio"
+                          name="chair"
+                          id="chair-Slow"
+                          value="Slow"
+                          checked
+                        />
+                        <label class="form-check-label" for="chair-Slow">Slow</label>
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="form-check radio-container">
+                        <input
+                          class="form-check-input"
+                          type="radio"
+                          name="chair"
+                          id="chair-quick"
+                          value="quick"
+                        />
+                        <label class="form-check-label" for="chair-quick">Quick</label>
+                      </div>
+                    </div>
+                  </div>
+                  
+                </div>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div
+                class="d-flex align-items-center justify-content-center"
+                style="height: 100%;"
+              >
+                <div class="text-center">
+                  <h5>Listen to what your avatar sounds like</h5>
+                  <p class="description">
+                    Frequency of non-work, non-event sounds are played at a higher frequency in this sample.
+                  </p>
+                  <button id="enter-room-btn" class="btn btn-primary custom-primary-btn" disabled>Enter Room</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <button id="pg-2-back-btn" class="btn btn-primary back-btn"><i class="fas fa-arrow-left fa-2x"></i></button>
         </div>
-        <div id="room-page" style="display: none">
+        <div id="room-page">
           <canvas id="canvas"></canvas>
         </div>
     </div>

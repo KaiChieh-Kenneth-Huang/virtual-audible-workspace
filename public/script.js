@@ -19,7 +19,7 @@ const pages = {
   setup: 'setup-page',
   room: 'room-page'
 }
-var curPage = pages.landing;
+var curPage = pages.setup;
 
 const playBackgroundSound = (key) => {
   const randStartTime = Math.random() * backgrounAudioElements[key].buffer.duration;
@@ -79,6 +79,13 @@ const checkAllAudiosLoaded = (buffers, callback) => {
     }
   }
   callback();
+}
+// initialize pages
+for (const key in pages) {
+  const page = pages[key];
+  if (page !== curPage) {
+    document.querySelector('#' + page).style.display = 'none';
+  }
 }
 
 // make background sound switch unclickable
