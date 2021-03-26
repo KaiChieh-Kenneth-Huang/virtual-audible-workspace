@@ -60,8 +60,8 @@ const backgroundSoundsReady = () => {
       gain: backgroundSoundGain[key]
     }
   }
-
-  checkAllAudiosLoaded(allAudioBuffers, allSoundsReady);
+  preloadAudioElements(flattenObjectToUniqueStringArray(SOUND_SRCS), preloadedAudioBuffer, otherSoundsReady, 'other-sounds');
+  //checkAllAudiosLoaded(allAudioBuffers, allSoundsReady);
 }
 
 const otherSoundsReady = () => {
@@ -93,8 +93,9 @@ bkgSoundSwitch.style.opacity = 0.3;
 bkgSoundSwitch.style.cursor = 'not-allowed';
 bkgSoundSwitch.dataset.loading = 'loading';
 
-preloadAudioElements(flattenObjectToUniqueStringArray(BACKGROUND_SOUND_SRCS), preloadedBackgroundAudioBuffer, backgroundSoundsReady,'background-sounds');
-preloadAudioElements(flattenObjectToUniqueStringArray(SOUND_SRCS), preloadedAudioBuffer, otherSoundsReady, 'other-sounds');
+document.onload = () => {
+  preloadAudioElements(flattenObjectToUniqueStringArray(BACKGROUND_SOUND_SRCS), preloadedBackgroundAudioBuffer, backgroundSoundsReady,'background-sounds');
+};
 
 setSelectedBackgroundSound(initialSelectedBackgroundSound);
 document.querySelector('#background-sound-select').dataset.value = initialSelectedBackgroundSound;
