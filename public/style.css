@@ -19,7 +19,7 @@
 }
 
 #setup-page {
-  padding: 80px 60px 60px 60px;
+  padding: 60px 60px 60px 60px;
 }
 
 #setup-page h6 {
@@ -124,5 +124,21 @@
 .back-btn {
   position: absolute;
   top: 20px;
-  left: 30px;
+  left: 40px;
+  border: none;
+}
+.back-btn i {
+  margin-right: 5px;
+}
+
+i.fa-play {
+  margin-right: 7px;
+  cursor: pointer;
+}
+
+#listen-to-avatar-btn {
+  cursor: pointer;
+}
+i.fa-play-circle:hover {
+  color: #222;
 }

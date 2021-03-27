@@ -659,7 +659,7 @@ class AudioContextAndScene {
             5000
           ), // settings
           workSound.type ? 5 : 10, // relative frequency
-          100, // duration
+          1000, // duration
           5000, // random additional duration
         ));
         workSounds.push(new AudioGroupWrapper(
@@ -667,13 +667,11 @@ class AudioContextAndScene {
           new AudioSettings(
             SOUND_SRCS.click.double,
             1 * gainCoefficient,
-            AUDIO_SETTING.INTERMITTENT,
-            100,
-            5000
+            AUDIO_SETTING.DEFAULT,
           ), // settings
           1, // relative frequency
-          200, // duration
-          3000, // random additional duration
+          1500, // duration
+          0, // random additional duration
         ));
       }
       // configure switch task pause for work sounds
@@ -854,7 +852,7 @@ class AudioContextAndScene {
         } else if (otherSound.sneeze === PERSON_SETTING.GENERAL_SOUND.SNEEZE.female) {
           source = SOUND_SRCS.sneeze.female;
           source2 = SOUND_SRCS.sneeze.female2;
-          gain = 1;
+          gain = 0.6;
           gain2 = 0.5;
         }
         humanSounds.push(new AudioGroupWrapper(
@@ -1060,7 +1058,27 @@ class SoundAvatarGenerator {
     this.audioElements = {};
     this.audioGroups = {};
     this.audioProfile = audioProfile;
+    this.isAvatarPlaying = false;
 
+    this.setAudioProfile(audioProfile);
+  }
+
+  playAvatar() {
+    this.isAvatarPlaying = true;
+    this.play(SOUND_GROUP_NAME.WORK);
+    this.play(SOUND_GROUP_NAME.HUMAN);
+  }
+
+  pauseAvatar() {
+    this.isAvatarPlaying = false;
+    this.pause(SOUND_GROUP_NAME.WORK);
+    this.pause(SOUND_GROUP_NAME.HUMAN);
+  }
+
+  setAudioProfile(audioProfile) {
+    this.audioProfile = audioProfile;
+    this.audioElements = {};
+    this.audioGroups = {};
     for (const [name, item] of Object.entries(audioProfile)) {
       if (item.constructor.name === 'AudioSettings') {
         const audioSetting = item;
@@ -1115,6 +1133,7 @@ class SoundAvatarGenerator {
   }
 
   play(key) {
+    console.log(key);
     if (this.audioElements[key] && this.audioElements[key].audioSettings.category === AUDIO_SETTING.INTERMITTENT) {
       this.playIntermittentSound(key);
     } else if (this.audioElements[key] && this.audioElements[key].audioSettings.category === AUDIO_SETTING.PARTIAL_PLAY) {
@@ -1155,7 +1174,7 @@ class SoundAvatarGenerator {
   }
 
   pauseSound(key) {
-    if (this.audioElements[key].source) {
+    if (this.audioElements[key]?.source) {
       this.audioElements[key].source.stop();
       this.audioElements[key].source = null;
     }
@@ -1189,11 +1208,11 @@ class SoundAvatarGenerator {
       const pauseLength = group.switchPauseDuration + Math.random() * group.randAdditionalSwitchPauseDuration;
       const playLength = (soundToPlay.duration + Math.random() * soundToPlay.randAdditionalDuration);
 
-      setTimeout(() => {
+      group.timeouts[0] = setTimeout(() => {
         if (group.isPlaying) {
           group.soundPlaying = soundToPlay.name;
           this.play(soundToPlay.name);
-          setTimeout(() => {
+          group.timeouts[1] = setTimeout(() => {
             this.pause(soundToPlay.name);
             if (group.isPlaying) {
               playMemberSound();
@@ -1203,12 +1222,17 @@ class SoundAvatarGenerator {
       }, pauseLength);
     }
 
+    group.timeouts = [];
+
     group.play();
     playMemberSound();
   }
 
   pauseAudioGroup(groupName) {
     this.audioGroups[groupName].pause();
+    this.audioGroups[groupName].timeouts.forEach((timeout) => {
+      clearTimeout(timeout);
+    });
     if (this.audioGroups[groupName].soundPlaying) {
       this.pause(this.audioGroups[groupName].soundPlaying);
     }
@@ -1217,7 +1241,7 @@ class SoundAvatarGenerator {
   playIntermittentSound(key) {
     const playSoundIntermittently = () => {
       const pauseLength = this.audioElements[key].audioSettings.pauseDuration + Math.random() * this.audioElements[key].audioSettings.randAdditionalPause;
-      setTimeout(() => {
+      this.audioElements[key].timeouts[0] = setTimeout(() => {
         if (this.audioElements[key].audioSettings.isPlaying) {
           this.playSound(key);
           playSoundIntermittently();
@@ -1225,11 +1249,15 @@ class SoundAvatarGenerator {
       }, pauseLength);
     }
 
+    this.audioElements[key].timeouts = [];
     this.audioElements[key].audioSettings.play();
     playSoundIntermittently();
   }
 
   pauseIntermittentSound(key) {
+    this.audioElements[key].timeouts.forEach((timeout) => {
+      clearTimeout(timeout);
+    });
     this.audioElements[key].audioSettings.pause();
     this.pauseSound(key);
   }
@@ -1240,10 +1268,10 @@ class SoundAvatarGenerator {
       const playLength = this.audioElements[key].audioSettings.playDuration + Math.random() * this.audioElements[key].audioSettings.randAdditionalPlay;
       const audioLength = this.getAudioDuration(key) || 0;
 
-      setTimeout(() => {
+      this.audioElements[key].timeouts[0] = setTimeout(() => {
         if (this.audioElements[key].audioSettings.playDuration && this.audioElements[key].audioSettings.isPlaying) {
           this.playSound(key, true, audioLength * Math.random()); // randomize start audio location
-          setTimeout(() => {
+          this.audioElements[key].timeouts[1] = setTimeout(() => {
             this.pauseSound(key);
             if (this.audioElements[key].audioSettings.playDuration && this.audioElements[key].audioSettings.isPlaying) {
               playPartialSoundIntermittently();
@@ -1253,11 +1281,15 @@ class SoundAvatarGenerator {
       }, pauseLength);
     }
 
+    this.audioElements[key].timeouts = [];
     this.audioElements[key].audioSettings.play();
     playPartialSoundIntermittently();
   }
 
   pausePartialSound (key) {
+    this.audioElements[key].timeouts.forEach((timeout) => {
+      clearTimeout(timeout);
+    });
     this.audioElements[key].audioSettings.pause();
     this.pauseSound(key);
   }

@@ -7,6 +7,10 @@ var selectedBackgroundSound;
 var backgroundSoundMuted = false;
 var muted = true;
 
+var avatarAudioProfile = {};
+var soundAvatarGenerator;
+var singleSoundPlayer;
+
 const backgroundSoundGain = {
   nowhere: 1,
   people: 0.2,
@@ -31,12 +35,16 @@ const playBackgroundSound = (key) => {
   currentlyPlayingBackgroundSound = backgrounAudioElements[key].source;
 }
 
+const pauseBackgroundSound = () => {
+  if (currentlyPlayingBackgroundSound) {
+    currentlyPlayingBackgroundSound.stop();
+    currentlyPlayingBackgroundSound = null;
+  }
+}
+
 const updateBackgroundSound = () => {
   if (muted || backgroundSoundMuted) {
-    if (currentlyPlayingBackgroundSound) {
-      currentlyPlayingBackgroundSound.stop();
-      currentlyPlayingBackgroundSound = null;
-    }
+    pauseBackgroundSound();
   } else {
     playBackgroundSound(selectedBackgroundSound);
   }
@@ -64,7 +72,482 @@ const backgroundSoundsReady = () => {
   //checkAllAudiosLoaded(allAudioBuffers, allSoundsReady);
 }
 
+const setUpSingleSoundPlayer = () => {
+  const audioProfile = {
+    ['type-slow']: new AudioSettings(
+      SOUND_SRCS.type.slow,
+      0.3,
+      AUDIO_SETTING.PARTIAL_PLAY,
+      500,
+      1000,
+      500,
+      1000
+    ),
+    ['type-fast']: new AudioSettings(
+      SOUND_SRCS.type.fast,
+      0.3,
+      AUDIO_SETTING.PARTIAL_PLAY,
+      500,
+      1000,
+      1000,
+      2000
+    ),
+    ['clicking']: new AudioGroup(
+      [
+        new AudioGroupWrapper(
+          'single-click', // name
+          new AudioSettings(
+            SOUND_SRCS.click.single,
+            0.5,
+            AUDIO_SETTING.DEFAULT,
+          ), // settings
+          5, // relative frequency
+          500, // duration
+          1000, // random additional duration
+        ),
+        new AudioGroupWrapper(
+          'double-click', // name
+          new AudioSettings(
+            SOUND_SRCS.click.double,
+            0.5,
+            AUDIO_SETTING.DEFAULT,
+          ), // settings
+          1, // relative frequency
+          1500, // duration
+          0, // random additional duration
+        )
+      ],
+      0,
+      0
+    ),
+    ['reading']: new AudioSettings(
+      SOUND_SRCS.pageFlip.single,
+      0.7,
+      AUDIO_SETTING.DEFAULT,
+    ),
+    ['sniffle']: new AudioSettings(
+      SOUND_SRCS.sniffle.default,
+      1,
+      AUDIO_SETTING.DEFAULT,
+    ),
+    ['movement-on-chair']: new AudioSettings(
+      SOUND_SRCS.chair.movingCreak,
+      1,
+      AUDIO_SETTING.DEFAULT,
+    ),
+    ['cough-lower']: new AudioSettings(
+      SOUND_SRCS.cough.male,
+      0.5,
+      AUDIO_SETTING.DEFAULT,
+    ),
+    ['cough-higher']: new AudioSettings(
+      SOUND_SRCS.cough.female,
+      0.2,
+      AUDIO_SETTING.DEFAULT,
+    ),
+    ['sneeze-lower']: new AudioSettings(
+      SOUND_SRCS.sneeze.male,
+      0.2,
+      AUDIO_SETTING.DEFAULT,
+    ),
+    ['sneeze-higher']: new AudioSettings(
+      SOUND_SRCS.sneeze.female,
+      0.5,
+      AUDIO_SETTING.DEFAULT,
+    ),
+    ['throat-clear-lower']: new AudioSettings(
+      SOUND_SRCS.throatClear.male,
+      0.2,
+      AUDIO_SETTING.DEFAULT,
+    ),
+    ['throat-clear-higher']: new AudioSettings(
+      SOUND_SRCS.throatClear.female,
+      0.1,
+      AUDIO_SETTING.DEFAULT,
+    ),
+    ['footsteps-slow']: new AudioSettings(
+      SOUND_SRCS.footstep.softSneakers,
+      1,
+      AUDIO_SETTING.INTERMITTENT,
+      700 * 0.9,
+      700 * 0.2
+    ),
+    ['footsteps-fast']: new AudioSettings(
+      SOUND_SRCS.footstep.softSneakers,
+      1,
+      AUDIO_SETTING.INTERMITTENT,
+      500 * 0.9,
+      500 * 0.2
+    ),
+    ['door-gentle']: new AudioSettings(
+      SOUND_SRCS.door.gentle,
+      1,
+      AUDIO_SETTING.DEFAULT,
+    ),
+    ['door-hard']: new AudioSettings(
+      SOUND_SRCS.door.slam,
+      1,
+      AUDIO_SETTING.DEFAULT,
+    ),
+    ['chair-quick']: new AudioSettings(
+      SOUND_SRCS.chair.slideQuick,
+      0.4,
+      AUDIO_SETTING.DEFAULT,
+    ),
+    ['chair-slow']: new AudioSettings(
+      SOUND_SRCS.chair.slideSlow,
+      1,
+      AUDIO_SETTING.DEFAULT,
+    ),
+  };
+  singleSoundPlayer = new SoundAvatarGenerator(audioContext, audioProfile);
+
+  for (const playIcon of document.querySelectorAll('.fa-play')) {
+    const id = playIcon.previousElementSibling.id;
+    playIcon.addEventListener('click', function() {
+      const soundId = playIcon.dataset.altsetector
+        ? id + '-' + $('input[name="' + playIcon.dataset.altsetector + '"]:checked').val()
+        : id;
+
+      console.log(soundId)
+      const audioDuration = singleSoundPlayer.audioProfile[soundId].category === AUDIO_SETTING.DEFAULT
+        ? singleSoundPlayer.getAudioDuration(soundId)
+        : 5;
+      
+      singleSoundPlayer.play(soundId);
+      playIcon.classList.add('text-success');
+      setTimeout(() => {
+        playIcon.classList.remove('text-success');
+        singleSoundPlayer.pause(soundId);
+      }, audioDuration * 1000);
+    });
+  }
+}
+
+const setUpSoundAvatarGenerator = () => {
+  soundAvatarGenerator = new SoundAvatarGenerator(audioContext, avatarAudioProfile);
+}
+
+const updateWorkSounds = () => {
+  const workSounds = [];
+  const typing = document.querySelector('#type').checked;
+  const clicking = document.querySelector('#clicking').checked;
+  const reading = document.querySelector('#reading').checked;
+  const gainCoefficient = 0.6;
+  const avatarPlaying = soundAvatarGenerator.isAvatarPlaying;
+
+  if (avatarPlaying) {
+    soundAvatarGenerator.pauseAvatar();
+  }
+  
+  // create work sounds
+  if (typing) {
+    if ($('input[name="type"]:checked').val() === 'slow') {
+      workSounds.push(new AudioGroupWrapper(
+        'type', // name
+        new AudioSettings(
+          SOUND_SRCS.type.slow,
+          1 * gainCoefficient,
+          AUDIO_SETTING.PARTIAL_PLAY,
+          500,
+          1000,
+          1000,
+          2000
+        ), // settings
+        10, // relative frequency
+        5000, // duration
+        5000, // random additional duration
+      ));
+    } else {
+      workSounds.push(new AudioGroupWrapper(
+        'type', // name
+        new AudioSettings(
+          SOUND_SRCS.type.fast,
+          1 * gainCoefficient,
+          AUDIO_SETTING.PARTIAL_PLAY,
+          500,
+          1000,
+          500,
+          1000
+        ), // settings
+        10, // relative frequency
+        5000, // duration
+        5000, // random additional duration
+      ));
+    }
+  }
+  if (clicking) {
+    workSounds.push(new AudioGroupWrapper(
+      'single-click', // name
+      new AudioSettings(
+        SOUND_SRCS.click.single,
+        1 * gainCoefficient,
+        AUDIO_SETTING.INTERMITTENT,
+        100,
+        5000
+      ), // settings
+      typing ? 5 : 10, // relative frequency
+      1000, // duration
+      5000, // random additional duration
+    ));
+    workSounds.push(new AudioGroupWrapper(
+      'double-click', // name
+      new AudioSettings(
+        SOUND_SRCS.click.double,
+        1 * gainCoefficient,
+        AUDIO_SETTING.DEFAULT,
+      ), // settings
+      1, // relative frequency
+      1500, // duration
+      0, // random additional duration
+    ));
+  }
+  if (reading) {
+    workSounds.push(new AudioGroupWrapper(
+      'page-flip', // name
+      new AudioSettings(
+        SOUND_SRCS.pageFlip.single,
+        1 * gainCoefficient,
+        AUDIO_SETTING.DEFAULT,
+      ), // settings
+      1, // relative frequency
+      2000, // duration
+      0, // random additional duration
+    ));
+  }
+
+  // configure switch task pause for work sounds
+  let switchTaskPause = 1000;
+  let randAdditionalSwitchTaskPause = 2000;
+  if (reading && !typing && !clicking) {
+    randAdditionalSwitchTaskPause = 100000;
+  }
+  if (workSounds.length) {
+    avatarAudioProfile[SOUND_GROUP_NAME.WORK] = new AudioGroup(workSounds, switchTaskPause, randAdditionalSwitchTaskPause);
+  } else {
+    delete avatarAudioProfile[SOUND_GROUP_NAME.WORK];
+  }
+  soundAvatarGenerator.setAudioProfile(avatarAudioProfile);
+
+  if (avatarPlaying) {
+    soundAvatarGenerator.playAvatar();
+  }
+}
+
+const updateHumanSounds = () => {
+  const humanSounds = [];
+  const sniffle = document.querySelector('#sniffle').checked;
+  const movementOnChair = document.querySelector('#movement-on-chair').checked;
+  const cough = document.querySelector('#cough').checked;
+  const sneeze = document.querySelector('#sneeze').checked;
+  const throatClear = document.querySelector('#throat-clear').checked;
+
+  const nonDisturbingPause = 3000;
+  const nonDisturbingRandAdditionalPause = 0;
+  const disturbingPause = 5000;
+  const disturbingRandAdditionalPause = 10000;
+
+  const gainCoefficient = 0.6;
+  const avatarPlaying = soundAvatarGenerator.isAvatarPlaying;
+
+  if (avatarPlaying) {
+    soundAvatarGenerator.pauseAvatar();
+  }
+  
+  // create human sounds
+  if (sniffle) {
+    humanSounds.push(new AudioGroupWrapper(
+      'sniffle', // name
+      new AudioSettings(
+        SOUND_SRCS.sniffle.default,
+        1 * gainCoefficient,
+        AUDIO_SETTING.DEFAULT,
+      ), // settings
+      2, // relative frequency
+      nonDisturbingPause, // duration
+      nonDisturbingRandAdditionalPause, // random additional duration
+    ));
+    humanSounds.push(new AudioGroupWrapper(
+      'sniffle2', // name
+      new AudioSettings(
+        SOUND_SRCS.sniffle.alt2,
+        0.3 * gainCoefficient,
+        AUDIO_SETTING.DEFAULT,
+      ), // settings
+      2, // relative frequency
+      nonDisturbingPause, // duration
+      nonDisturbingRandAdditionalPause, // random additional duration
+    ));
+  }
+  if (movementOnChair) {
+    humanSounds.push(new AudioGroupWrapper(
+      'movement-on-chair', // name
+      new AudioSettings(
+        SOUND_SRCS.chair.movingCreak,
+        1,
+        AUDIO_SETTING.DEFAULT,
+      ), // settings
+      1, // relative frequency
+      4000, // duration
+      10000, // random additional duration
+    ));
+  }
+  if (cough) {
+    let source, source2;
+    let gain, gain2;
+    if ($('input[name="pitch"]:checked').val() === 'lower') {
+      source = SOUND_SRCS.cough.male;
+      source2 = SOUND_SRCS.cough.male2;
+      gain = 0.5;
+      gain2 = 0.5;
+    } else if ($('input[name="pitch"]:checked').val() === 'higher') {
+      source = SOUND_SRCS.cough.female;
+      source2 = SOUND_SRCS.cough.female2;
+      gain = 0.2;
+      gain2 = 0.3;
+    }
+    humanSounds.push(new AudioGroupWrapper(
+      'cough', // name
+      new AudioSettings(
+        source,
+        gain * gainCoefficient,
+        AUDIO_SETTING.DEFAULT,
+        disturbingPause,
+        disturbingRandAdditionalPause
+      ), // settings
+      1, // relative frequency
+      disturbingPause, // duration
+      disturbingRandAdditionalPause, // random additional duration
+    ));
+    humanSounds.push(new AudioGroupWrapper(
+      'cough2', // name
+      new AudioSettings(
+        source2,
+        gain2 * gainCoefficient,
+        AUDIO_SETTING.DEFAULT,
+        disturbingPause,
+        disturbingRandAdditionalPause
+      ), // settings
+      1, // relative frequency
+      disturbingPause, // duration
+      disturbingRandAdditionalPause, // random additional duration
+    ));
+  }
+  if (sneeze) {
+    let source, source2;
+    let gain, gain2;
+    if ($('input[name="pitch"]:checked').val() === 'lower') {
+      source = SOUND_SRCS.sneeze.male;
+      source2 = SOUND_SRCS.sneeze.male2;
+      gain = 0.2;
+      gain2 = 0.3;
+    } else if ($('input[name="pitch"]:checked').val() === 'higher') {
+      source = SOUND_SRCS.sneeze.female;
+      source2 = SOUND_SRCS.sneeze.female2;
+      gain = 0.6;
+      gain2 = 0.5;
+    }
+    humanSounds.push(new AudioGroupWrapper(
+      'sneeze', // name
+      new AudioSettings(
+        source,
+        gain * gainCoefficient,
+        AUDIO_SETTING.DEFAULT,
+        disturbingPause,
+        disturbingRandAdditionalPause
+      ), // settings
+      1, // relative frequency
+      disturbingPause, // duration
+      disturbingRandAdditionalPause, // random additional duration
+    ));
+    humanSounds.push(new AudioGroupWrapper(
+      'sneeze2', // name
+      new AudioSettings(
+        source2,
+        gain2 * gainCoefficient,
+        AUDIO_SETTING.DEFAULT,
+        disturbingPause,
+        disturbingRandAdditionalPause
+      ), // settings
+      1, // relative frequency
+      disturbingPause, // duration
+      disturbingRandAdditionalPause, // random additional duration
+    ));
+  }
+  if (throatClear) {
+    let source, source2;
+    let gain, gain2;
+    if ($('input[name="pitch"]:checked').val() === 'lower') {
+      source = SOUND_SRCS.throatClear.male;
+      source2 = SOUND_SRCS.throatClear.male2;
+      gain = 0.2;
+      gain2 = 0.2;
+    } else if ($('input[name="pitch"]:checked').val() === 'higher') {
+      source = SOUND_SRCS.throatClear.female;
+      source2 = SOUND_SRCS.throatClear.female2;
+      gain = 0.1;
+      gain2 = 0.1;
+    }
+    humanSounds.push(new AudioGroupWrapper(
+      'throatClear', // name
+      new AudioSettings(
+        source,
+        gain * gainCoefficient,
+        AUDIO_SETTING.DEFAULT,
+        disturbingPause,
+        disturbingRandAdditionalPause
+      ), // settings
+      1, // relative frequency
+      disturbingPause, // duration
+      disturbingRandAdditionalPause, // random additional duration
+    ));
+    humanSounds.push(new AudioGroupWrapper(
+      'throatClear2', // name
+      new AudioSettings(
+        source2,
+        gain2 * gainCoefficient,
+        AUDIO_SETTING.DEFAULT,
+        disturbingPause,
+        disturbingRandAdditionalPause
+      ), // settings
+      1, // relative frequency
+      disturbingPause, // duration
+      disturbingRandAdditionalPause, // random additional duration
+    ));
+  }
+
+  if (humanSounds.length) {
+    avatarAudioProfile[SOUND_GROUP_NAME.HUMAN] = new AudioGroup(humanSounds, 0, 5000);
+  } else {
+    delete avatarAudioProfile[SOUND_GROUP_NAME.HUMAN];
+  }
+  soundAvatarGenerator.setAudioProfile(avatarAudioProfile);
+
+  if (avatarPlaying) {
+    soundAvatarGenerator.playAvatar();
+  }
+}
+
+function playPauseAvatarSound() {
+  if (this.classList.contains('fa-play-circle')) {
+    // play
+    this.classList.replace('fa-play-circle', 'fa-pause-circle');
+    this.classList.add('text-success');
+    soundAvatarGenerator.playAvatar();
+  } else {
+    // pause
+    this.classList.replace('fa-pause-circle', 'fa-play-circle');
+    this.classList.remove('text-success');
+    soundAvatarGenerator.pauseAvatar();
+  }
+}
+
 const otherSoundsReady = () => {
+  setUpSingleSoundPlayer();
+  setUpSoundAvatarGenerator();
+  const nextPgBtn = document.querySelector('#pg-1-next-btn');
+  nextPgBtn.disabled = false;
+  nextPgBtn.querySelector('.spinner-border').style.display = 'none';
   checkAllAudiosLoaded(allAudioBuffers, allSoundsReady);
 }
 
@@ -161,14 +644,34 @@ document.querySelector('#pg-1-next-btn').onclick = () => {
   } else {
     changePage(pages.setup);
   }
+
+  // initilize sound, if not initialized, so that async sounds could play on the next page
+  if (document.querySelector('.sound-switch').dataset.status === 'muted') {
+    playBackgroundSound(initialSelectedBackgroundSound);
+    pauseBackgroundSound();
+  }
 };
 
 document.querySelector('#pg-2-back-btn').onclick = () => {
   changePage(pages.landing);
 };
 
+document.querySelector('#listen-to-avatar-btn').addEventListener('click', playPauseAvatarSound);
+
+document.querySelectorAll('.work-sound-toggle').forEach(toggle => {
+  toggle.addEventListener('change', () => {
+    updateWorkSounds();
+  })
+})
+
+document.querySelectorAll('.human-sound-toggle').forEach(toggle => {
+  toggle.addEventListener('change', () => {
+    updateHumanSounds();
+  })
+})
+
 function setUpLandingPage() {
-  unMuteBackgroundSound();
+  //unMuteBackgroundSound();
 }
 
 function setUpSetupPage() {
@@ -180,7 +683,7 @@ function setUpRoomPage() {
 }
 
 function exitLandingPage() {
-  muteBackgroundSound();
+  //muteBackgroundSound();
 }
 
 function exitSetupPage() {

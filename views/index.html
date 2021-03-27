@@ -62,7 +62,14 @@
               </ul>
             </div>
             <div class="pg-1-row">
-              <button id="pg-1-next-btn" class="btn btn-primary custom-primary-btn">Next</button>
+              <button id="pg-1-next-btn" class="btn btn-primary custom-primary-btn" type="button" disabled>
+                <span
+                  class="spinner-border spinner-border-sm"
+                  role="status"
+                  aria-hidden="true"
+                ></span>
+                Next
+              </button>
             </div>
           </div>
         </div>
@@ -88,40 +95,40 @@
                     <!-- Typing -->
                     <div class="toggle-group">
                       <div class="form-check form-switch toggle-container">
-                        <input class="form-check-input" type="checkbox" id="typing"/>
-                        <label class="form-check-label" for="typing">Typing</label>
+                        <input class="form-check-input work-sound-toggle" type="checkbox" id="type"/>
+                        <label class="form-check-label" for="type">Typing</label>
                       </div>
                       <div class="form-check radio-container">
                         <input
-                          class="form-check-input"
+                          class="form-check-input work-sound-toggle"
                           type="radio"
-                          name="typing"
-                          id="typing-slow"
+                          name="type"
+                          id="type-slow"
                           value="slow"
                           checked
                         />
-                        <label class="form-check-label" for="typing-slow">Slow and deliberate</label>
+                        <i class="fas fa-play"></i><label class="form-check-label" for="type-slow">Slow and deliberate</label>
                       </div>
                       <div class="form-check radio-container">
                         <input
-                          class="form-check-input"
+                          class="form-check-input work-sound-toggle"
                           type="radio"
-                          name="typing"
-                          id="typing-fast"
+                          name="type"
+                          id="type-fast"
                           value="fast"
                         />
-                        <label class="form-check-label" for="typing-fast">Fast and relentless</label>
+                        <i class="fas fa-play"></i><label class="form-check-label" for="type-fast">Fast and relentless</label>
                       </div>
                     </div>
                     <!-- Clicking -->
                     <div class="form-check form-switch toggle-container">
-                      <input class="form-check-input" type="checkbox" id="clicking"/>
-                      <label class="form-check-label" for="clicking">Clicking</label>
+                      <input class="form-check-input work-sound-toggle" type="checkbox" id="clicking"/>
+                      <i class="fas fa-play"></i><label class="form-check-label" for="clicking">Clicking</label>
                     </div>
                     <!-- Reading -->
                     <div class="form-check form-switch toggle-container">
-                      <input class="form-check-input" type="checkbox" id="reading"/>
-                      <label class="form-check-label" for="reading">Reading</label>
+                      <input class="form-check-input work-sound-toggle" type="checkbox" id="reading"/>
+                      <i class="fas fa-play"></i><label class="form-check-label" for="reading">Reading</label>
                     </div>
                   </div>
                 </div>
@@ -147,54 +154,56 @@
                     <div class="section">
                       <!-- Sniffle -->
                       <div class="form-check form-switch toggle-container">
-                        <input class="form-check-input" type="checkbox" id="sniffle"/>
-                        <label class="form-check-label" for="sniffle">Sniffle</label>
+                        <input class="form-check-input human-sound-toggle" type="checkbox" id="sniffle"/>
+                        <i class="fas fa-play"></i><label class="form-check-label" for="sniffle">Sniffle</label>
                       </div>
                       <!-- Movement on chair -->
                       <div class="form-check form-switch toggle-container">
-                        <input class="form-check-input" type="checkbox" id="movement-on-chair"/>
-                        <label class="form-check-label" for="movement-on-chair">Movement on chair</label>
+                        <input class="form-check-input  human-sound-toggle" type="checkbox" id="movement-on-chair"/>
+                        <i class="fas fa-play"></i><label class="form-check-label" for="movement-on-chair">Movement on chair</label>
                       </div>
                     </div>
                     <div class="section">
                       <div class="section">
                         <span class="me-3">Select pitch for the following</span>
-                        <div class="form-check radio-container">
-                          <input
-                            class="form-check-input"
-                            type="radio"
-                            name="pitch"
-                            id="pitch-lower"
-                            value="lower"
-                            checked
-                          />
-                          <label class="form-check-label" for="pitch-lower">Lower</label>
-                        </div>
-                        <div class="form-check radio-container">
-                          <input
-                            class="form-check-input"
-                            type="radio"
-                            name="pitch"
-                            id="pitch-higher"
-                            value="higher"
-                          />
-                          <label class="form-check-label" for="pitch-higher">Higher</label>
+                        <div class="d-inline-block">
+                          <div class="form-check radio-container">
+                            <input
+                              class="form-check-input human-sound-toggle"
+                              type="radio"
+                              name="pitch"
+                              id="pitch-lower"
+                              value="lower"
+                              checked
+                            />
+                            <label class="form-check-label" for="pitch-lower">Lower</label>
+                          </div>
+                          <div class="form-check radio-container">
+                            <input
+                              class="form-check-input human-sound-toggle"
+                              type="radio"
+                              name="pitch"
+                              id="pitch-higher"
+                              value="higher"
+                            />
+                            <label class="form-check-label" for="pitch-higher">Higher</label>
+                          </div>
                         </div>
                       </div>
                       <!-- Cough -->
                       <div class="form-check form-switch toggle-container">
-                        <input class="form-check-input" type="checkbox" id="cough"/>
-                        <label class="form-check-label" for="cough">Cough</label>
+                        <input class="form-check-input human-sound-toggle" type="checkbox" id="cough"/>
+                        <i class="fas fa-play" data-altsetector="pitch"></i><label class="form-check-label" for="cough">Cough</label>
                       </div>
                       <!-- sneeze -->
                       <div class="form-check form-switch toggle-container">
-                        <input class="form-check-input" type="checkbox" id="sneeze"/>
-                        <label class="form-check-label" for="sneeze">Sneeze</label>
+                        <input class="form-check-input human-sound-toggle" type="checkbox" id="sneeze"/>
+                        <i class="fas fa-play" data-altsetector="pitch"></i><label class="form-check-label" for="sneeze">Sneeze</label>
                       </div>
                       <!-- throat-clear -->
                       <div class="form-check form-switch toggle-container">
-                        <input class="form-check-input" type="checkbox" id="throat-clear"/>
-                        <label class="form-check-label" for="throat-clear">Throat clear</label>
+                        <input class="form-check-input human-sound-toggle" type="checkbox" id="throat-clear"/>
+                        <i class="fas fa-play" data-altsetector="pitch"></i><label class="form-check-label" for="throat-clear">Throat clear</label>
                       </div>
                       
                     </div>
@@ -220,7 +229,7 @@
                           value="slow"
                           checked
                         />
-                        <label class="form-check-label" for="footsteps-slow">Slow</label>
+                        <i class="fas fa-play"></i><label class="form-check-label" for="footsteps-slow">Slow</label>
                       </div>
                     </div>
                     <div class="col-md-6">
@@ -232,7 +241,7 @@
                           id="footsteps-fast"
                           value="fast"
                         />
-                        <label class="form-check-label" for="footsteps-fast">Fast</label>
+                        <i class="fas fa-play"></i><label class="form-check-label" for="footsteps-fast">Fast</label>
                       </div>
                     </div>
                   </div>
@@ -251,7 +260,7 @@
                           value="gentle"
                           checked
                         />
-                        <label class="form-check-label" for="door-gentle">Gentle</label>
+                        <i class="fas fa-play"></i><label class="form-check-label" for="door-gentle">Gentle</label>
                       </div>
                     </div>
                     <div class="col-md-6">
@@ -263,7 +272,7 @@
                           id="door-hard"
                           value="hard"
                         />
-                        <label class="form-check-label" for="door-hard">Hard</label>
+                        <i class="fas fa-play"></i><label class="form-check-label" for="door-hard">Hard</label>
                       </div>
                     </div>
                   </div>
@@ -278,11 +287,11 @@
                           class="form-check-input"
                           type="radio"
                           name="chair"
-                          id="chair-Slow"
+                          id="chair-slow"
                           value="Slow"
                           checked
                         />
-                        <label class="form-check-label" for="chair-Slow">Slow</label>
+                        <i class="fas fa-play"></i><label class="form-check-label" for="chair-slow">Slow</label>
                       </div>
                     </div>
                     <div class="col-md-6">
@@ -294,7 +303,7 @@
                           id="chair-quick"
                           value="quick"
                         />
-                        <label class="form-check-label" for="chair-quick">Quick</label>
+                        <i class="fas fa-play"></i><label class="form-check-label" for="chair-quick">Quick</label>
                       </div>
                     </div>
                   </div>
@@ -308,16 +317,19 @@
                 style="height: 100%;"
               >
                 <div class="text-center">
-                  <h5>Listen to what your avatar sounds like</h5>
-                  <p class="description">
-                    Frequency of non-work, non-event sounds are played at a higher frequency in this sample.
-                  </p>
+                  <div class="mb-5">
+                    <h5>Listen to what your avatar sounds like</h5>
+                    <p class="description">
+                      Frequency of non-work, non-event sounds are played at a higher frequency in this sample.
+                    </p>
+                    <i id="listen-to-avatar-btn" class="fas fa-play-circle fa-5x"></i>
+                  </div>
                   <button id="enter-room-btn" class="btn btn-primary custom-primary-btn" disabled>Enter Room</button>
                 </div>
               </div>
             </div>
           </div>
-          <button id="pg-2-back-btn" class="btn btn-primary back-btn"><i class="fas fa-arrow-left fa-2x"></i></button>
+          <button id="pg-2-back-btn" class="btn btn-outline-dark btn-rounded back-btn" data-mdb-ripple-color="dark"><i class="fas fa-chevron-left"></i>BACK</button>
         </div>
         <div id="room-page">
           <canvas id="canvas"></canvas>
