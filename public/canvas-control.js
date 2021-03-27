@@ -113,7 +113,7 @@ CanvasControl.prototype.draw = function() {
         const fill = new Path2D();
         const radius = (width + height) / 4;
         const text = icon.text;
-        const maxTextWidth = radius * 1;
+        const maxTextWidth = radius * 0.8;
         let fontSize = Math.floor(maxTextWidth);
         const oriLineWidth = this._context.lineWidth;
         const oriStrokeStyle = this._context.strokeStyle;
@@ -147,11 +147,12 @@ CanvasControl.prototype.draw = function() {
         // draw text
         // text width check
         this._context.font = 'bold ' + fontSize + 'px ' + PRIMARY_FONT;
-        const oriTextWidth = this._context.measureText(text).width;
-        if (oriTextWidth > maxTextWidth) {
-          fontSize = Math.floor(fontSize * maxTextWidth / oriTextWidth);
-          this._context.font = 'bold ' + fontSize + 'px ' + PRIMARY_FONT;
-        }
+        // text width checking
+        // const oriTextWidth = this._context.measureText(text).width;
+        // if (oriTextWidth > maxTextWidth) {
+        //   fontSize = Math.floor(fontSize * maxTextWidth / oriTextWidth);
+        //   this._context.font = 'bold ' + fontSize + 'px ' + PRIMARY_FONT;
+        // }
         this._context.globalAlpha = 1;
         this._context.fillStyle = PERSON_ICON_TEXT_COLOR;
         this._context.textAlign = 'center';
