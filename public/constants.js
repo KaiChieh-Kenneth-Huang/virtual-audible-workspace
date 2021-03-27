@@ -29,22 +29,29 @@ const SOUND_SRCS = {
     placeBook: SOUNDS_PATH + ENVIRONMENT_PATH + 'place_book.wav',
   },
   sniffle: {
-    default: SOUNDS_PATH + INTRINSIC_PATH + 'sniffle.mp3'
+    default: SOUNDS_PATH + INTRINSIC_PATH + 'sniffle.mp3',
+    alt2: SOUNDS_PATH + INTRINSIC_PATH + 'sniffle 2.mp3'
   },
   throatClear: {
     default: SOUNDS_PATH + INTRINSIC_PATH + 'male_throat_clear.mp3',
     male: SOUNDS_PATH + INTRINSIC_PATH + 'male_throat_clear.mp3',
+    male2: SOUNDS_PATH + INTRINSIC_PATH + 'male_throat_clear 2.mp3',
     female: SOUNDS_PATH + INTRINSIC_PATH + 'female_throat_clear.wav',
+    female2: SOUNDS_PATH + INTRINSIC_PATH + 'female_throat_clear 2.mp3',
   },
   cough: {
-    default: SOUNDS_PATH + INTRINSIC_PATH + 'male_cough.mp3',
-    male: SOUNDS_PATH + INTRINSIC_PATH + 'male_cough.mp3',
+    default: SOUNDS_PATH + INTRINSIC_PATH + 'male cough.mp3',
+    male: SOUNDS_PATH + INTRINSIC_PATH + 'male cough.mp3',
+    male2: SOUNDS_PATH + INTRINSIC_PATH + 'male cough 2.mp3',
     female: SOUNDS_PATH + INTRINSIC_PATH + 'female_cough.wav',
+    female2: SOUNDS_PATH + INTRINSIC_PATH + 'female cough 2.mp3',
   },
   sneeze: {
     default: SOUNDS_PATH + INTRINSIC_PATH + 'male_sneeze.wav',
     male: SOUNDS_PATH + INTRINSIC_PATH + 'male_sneeze.wav',
+    male2: SOUNDS_PATH + INTRINSIC_PATH + 'male sneeze 2.wav',
     female: SOUNDS_PATH + INTRINSIC_PATH + 'female_sneeze.mp3',
+    female2: SOUNDS_PATH + INTRINSIC_PATH + 'female_sneeze 2.mp3',
   },
   type: {
     default: SOUNDS_PATH + WORK_PATH + 'fast_typ1.mp3',
@@ -135,7 +142,7 @@ const TABLE_WIDTH = 125;
 const TABLE_LENGTH = 125;
 const TABLE_HEIGHT = 0.5;
 
-const PERSON_SIZE = 60;
+const PERSON_SIZE = 40;
 
 const ROOM_DIMENSIONS = {
   width: 80, height: 3, depth: 50,
@@ -213,7 +220,8 @@ const SOUND_NAME = {
 }
 
 const SOUND_GROUP_NAME = {
-  WORK: 'work-sounds'
+  WORK: 'work-sounds',
+  HUMAN: 'human-sounds',
 }
 
 // image paths

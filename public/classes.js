@@ -123,7 +123,7 @@ class SoundSource extends CanvasElement {
     for (const [name, item] of Object.entries(audioProfile)) {
       if (item.constructor.name === 'AudioSettings') {
         const audioSetting = item;
-        this.addAudioElement(name, audioSetting);
+        this.setAudioElement(name, audioSetting);
 
       } else if (item.constructor.name === 'AudioGroup') {
         const audioGroup = item;
@@ -132,7 +132,7 @@ class SoundSource extends CanvasElement {
         // load sounds
         audioGroup.audioGroupWrappers.forEach((item) => {
           const audioSetting = item.audioSettings;
-          this.addAudioElement(item.name, audioSetting);
+          this.setAudioElement(item.name, audioSetting);
         });
       }
     }
@@ -145,7 +145,7 @@ class SoundSource extends CanvasElement {
     this.audioGroups[key] = group;
   }
 
-  addAudioElement(key, audioSettings) {
+  setAudioElement(key, audioSettings) {
     if (preloadedAudioBuffer[audioSettings.source]) {
       this.audioElements[key] = {
         source: null, // source created when sound is played
@@ -351,10 +351,11 @@ class Person extends SoundSource {
   _initState(state, prevState) {
     // this should only run once on initialization
     if (prevState === null && state) {
-      this.play(SOUND_NAME.SNIFFLE);
-      this.play(SOUND_NAME.THROAT_CLEAR);
-      this.play(SOUND_NAME.COUGH);
-      this.play(SOUND_NAME.SNEEZE);
+      this.play(SOUND_GROUP_NAME.HUMAN)
+      // this.play(SOUND_NAME.SNIFFLE);
+      // this.play(SOUND_NAME.THROAT_CLEAR);
+      // this.play(SOUND_NAME.COUGH);
+      // this.play(SOUND_NAME.SNEEZE);
     }
 
     if (state === ELEMENT_STATE.WALKING) {
@@ -593,6 +594,7 @@ class AudioContextAndScene {
     isListener
   ) {
     const workSounds = [];
+    const humanSounds = [];
     const audioProfile = {};
     const habbits = {};
     const gainCoefficient = isListener ? 1 : 1;
@@ -730,75 +732,160 @@ class AudioContextAndScene {
         footstepPeriod * 0.9,
         footstepPeriod * 0.2
       );
-      // create general sounds
+      // create human sounds
+      const nonDisturbingPause = 3000;
+      const nonDisturbingRandAdditionalPause = 0;
+      const disturbingPause = 60000;
+      const disturbingRandAdditionalPause = 60000;
       if (otherSound.sniffle === PERSON_SETTING.GENERAL_SOUND.SNIFFLE.default) {
-        audioProfile[SOUND_NAME.SNIFFLE] = new AudioSettings(
-          SOUND_SRCS.sniffle.default,
-          1 * gainCoefficient,
-          AUDIO_SETTING.INTERMITTENT,
-          1000,
-          60000
-        );
+        humanSounds.push(new AudioGroupWrapper(
+          'sniffle', // name
+          new AudioSettings(
+            SOUND_SRCS.sniffle.default,
+            1 * gainCoefficient,
+            AUDIO_SETTING.DEFAULT,
+          ), // settings
+          2, // relative frequency
+          nonDisturbingPause, // duration
+          nonDisturbingRandAdditionalPause, // random additional duration
+        ));
+        humanSounds.push(new AudioGroupWrapper(
+          'sniffle2', // name
+          new AudioSettings(
+            SOUND_SRCS.sniffle.alt2,
+            0.3 * gainCoefficient,
+            AUDIO_SETTING.DEFAULT,
+          ), // settings
+          2, // relative frequency
+          nonDisturbingPause, // duration
+          nonDisturbingRandAdditionalPause, // random additional duration
+        ));
       }
       if (otherSound.throatClear) {
-        const pause = 2000;
-        const additionalRandomPause = 200000;
-        let source;
-        let gain;
+        let source, source2;
+        let gain, gain2;
         if (otherSound.throatClear === PERSON_SETTING.GENERAL_SOUND.THROAT_CLEAR.male) {
           source = SOUND_SRCS.throatClear.male;
-          gain = 1;
+          source2 = SOUND_SRCS.throatClear.male2;
+          gain = 0.2;
+          gain2 = 0.2;
         } else if (otherSound.throatClear === PERSON_SETTING.GENERAL_SOUND.THROAT_CLEAR.female) {
           source = SOUND_SRCS.throatClear.female;
+          source2 = SOUND_SRCS.throatClear.female2;
           gain = 0.1;
+          gain2 = 0.1;
         }
-        audioProfile[SOUND_NAME.THROAT_CLEAR] = new AudioSettings(
-          source,
-          gain * gainCoefficient,
-          AUDIO_SETTING.INTERMITTENT,
-          pause,
-          additionalRandomPause
-        );
+        humanSounds.push(new AudioGroupWrapper(
+          'throatClear', // name
+          new AudioSettings(
+            source,
+            gain * gainCoefficient,
+            AUDIO_SETTING.DEFAULT,
+            disturbingPause,
+            disturbingRandAdditionalPause
+          ), // settings
+          1, // relative frequency
+          disturbingPause, // duration
+          disturbingRandAdditionalPause, // random additional duration
+        ));
+        humanSounds.push(new AudioGroupWrapper(
+          'throatClear2', // name
+          new AudioSettings(
+            source2,
+            gain2 * gainCoefficient,
+            AUDIO_SETTING.DEFAULT,
+            disturbingPause,
+            disturbingRandAdditionalPause
+          ), // settings
+          1, // relative frequency
+          disturbingPause, // duration
+          disturbingRandAdditionalPause, // random additional duration
+        ));
       }
       if (otherSound.cough) {
-        const pause = 30000;
-        const additionalRandomPause = 360000;
-        let source;
-        let gain;
+        let source, source2;
+        let gain, gain2;
         if (otherSound.cough === PERSON_SETTING.GENERAL_SOUND.COUGH.male) {
           source = SOUND_SRCS.cough.male;
-          gain = 1;
+          source2 = SOUND_SRCS.cough.male2;
+          gain = 0.5;
+          gain2 = 0.5;
         } else if (otherSound.cough === PERSON_SETTING.GENERAL_SOUND.COUGH.female) {
           source = SOUND_SRCS.cough.female;
+          source2 = SOUND_SRCS.cough.female2;
           gain = 0.2;
+          gain2 = 0.3;
         }
-        audioProfile[SOUND_NAME.COUGH] = new AudioSettings(
-          source,
-          gain * gainCoefficient,
-          AUDIO_SETTING.INTERMITTENT,
-          pause,
-          additionalRandomPause
-        );
+        humanSounds.push(new AudioGroupWrapper(
+          'cough', // name
+          new AudioSettings(
+            source,
+            gain * gainCoefficient,
+            AUDIO_SETTING.DEFAULT,
+            disturbingPause,
+            disturbingRandAdditionalPause
+          ), // settings
+          1, // relative frequency
+          disturbingPause, // duration
+          disturbingRandAdditionalPause, // random additional duration
+        ));
+        humanSounds.push(new AudioGroupWrapper(
+          'cough2', // name
+          new AudioSettings(
+            source2,
+            gain2 * gainCoefficient,
+            AUDIO_SETTING.DEFAULT,
+            disturbingPause,
+            disturbingRandAdditionalPause
+          ), // settings
+          1, // relative frequency
+          disturbingPause, // duration
+          disturbingRandAdditionalPause, // random additional duration
+        ));
       }
       if (otherSound.sneeze) {
-        const pause = 30000;
-        const additionalRandomPause = 360000;
-        let source;
-        let gain;
+        let source, source2;
+        let gain, gain2;
         if (otherSound.sneeze === PERSON_SETTING.GENERAL_SOUND.SNEEZE.male) {
           source = SOUND_SRCS.sneeze.male;
+          source2 = SOUND_SRCS.sneeze.male2;
           gain = 0.2;
+          gain2 = 0.3;
         } else if (otherSound.sneeze === PERSON_SETTING.GENERAL_SOUND.SNEEZE.female) {
           source = SOUND_SRCS.sneeze.female;
+          source2 = SOUND_SRCS.sneeze.female2;
           gain = 1;
+          gain2 = 0.5;
         }
-        audioProfile[SOUND_NAME.SNEEZE] = new AudioSettings(
-          source,
-          gain * gainCoefficient,
-          AUDIO_SETTING.INTERMITTENT,
-          pause,
-          additionalRandomPause
-        );
+        humanSounds.push(new AudioGroupWrapper(
+          'sneeze', // name
+          new AudioSettings(
+            source,
+            gain * gainCoefficient,
+            AUDIO_SETTING.DEFAULT,
+            disturbingPause,
+            disturbingRandAdditionalPause
+          ), // settings
+          1, // relative frequency
+          disturbingPause, // duration
+          disturbingRandAdditionalPause, // random additional duration
+        ));
+        humanSounds.push(new AudioGroupWrapper(
+          'sneeze2', // name
+          new AudioSettings(
+            source2,
+            gain2 * gainCoefficient,
+            AUDIO_SETTING.DEFAULT,
+            disturbingPause,
+            disturbingRandAdditionalPause
+          ), // settings
+          1, // relative frequency
+          disturbingPause, // duration
+          disturbingRandAdditionalPause, // random additional duration
+        ));
+      }
+      if (humanSounds.length) {
+        audioProfile[SOUND_GROUP_NAME.HUMAN] = new AudioGroup(humanSounds, 0, 60000);
       }
     }
 
@@ -962,5 +1049,216 @@ class AudioContextAndScene {
     }
 
     return clusterElements;
+  }
+}
+
+// utility class for creating sound avatar
+class SoundAvatarGenerator {
+  constructor (audioContext, audioProfile) {
+    // state is set with setState to trigger change state action
+    this.audioContext = audioContext;
+    this.audioElements = {};
+    this.audioGroups = {};
+    this.audioProfile = audioProfile;
+
+    for (const [name, item] of Object.entries(audioProfile)) {
+      if (item.constructor.name === 'AudioSettings') {
+        const audioSetting = item;
+        this.setAudioElement(name, audioSetting);
+
+      } else if (item.constructor.name === 'AudioGroup') {
+        const audioGroup = item;
+        this.addAudioGroup(name, audioGroup);
+
+        // load sounds
+        audioGroup.audioGroupWrappers.forEach((item) => {
+          const audioSetting = item.audioSettings;
+          this.setAudioElement(item.name, audioSetting);
+        });
+      }
+    }
+  }
+  
+  addAudioGroup(key, group) {
+    this.audioGroups[key] = group;
+  }
+
+  setAudioElement(key, audioSettings) {
+    if (preloadedAudioBuffer[audioSettings.source]) {
+      this.audioElements[key] = {
+        source: null, // source created when sound is played
+        buffer: preloadedAudioBuffer[audioSettings.source],
+        audioSettings: audioSettings
+      }
+    } else {
+      console.log('loaded: ' + audioSettings.source);
+      const audioCtx = this.audioContext;
+      const myRequest = new Request(audioSettings.source);
+    
+      fetch(myRequest).then((response) => {
+        return response.arrayBuffer();
+      }).then((buffer) => {
+        audioCtx.decodeAudioData(buffer, (decodedData) => {
+          // store the buffer for future AudioSource instances
+          this.audioElements[key] = {
+            source: null, // source created when sound is played
+            buffer: decodedData,
+            audioSettings: audioSettings
+          }
+        });
+      });
+    }
+  }
+
+  hasAudioElement(key) {
+    return !!this.audioElements[key];
+  }
+
+  play(key) {
+    if (this.audioElements[key] && this.audioElements[key].audioSettings.category === AUDIO_SETTING.INTERMITTENT) {
+      this.playIntermittentSound(key);
+    } else if (this.audioElements[key] && this.audioElements[key].audioSettings.category === AUDIO_SETTING.PARTIAL_PLAY) {
+      this.playPartialSound(key);
+    } else if (this.audioElements[key] && this.audioElements[key].audioSettings.category === AUDIO_SETTING.DEFAULT) {
+      this.playSound(key);
+    } else if (this.audioGroups[key]) {
+      this.playAudioGroup(key);
+    }
+  }
+
+  pause(key) {
+    if (this.audioElements[key] && this.audioElements[key].audioSettings.category === AUDIO_SETTING.INTERMITTENT) {
+      this.pauseIntermittentSound(key);
+    } else if (this.audioElements[key] && this.audioElements[key].audioSettings.category === AUDIO_SETTING.PARTIAL_PLAY) {
+      this.pausePartialSound(key);
+    } else if (this.audioGroups[key]) {
+      this.pauseAudioGroup(key);
+    }
+  }
+
+  playSound(key, loop, startTime) {
+    const newSource = this.audioContext.createBufferSource();
+    const gainNode = this.audioContext.createGain();
+    gainNode.gain.value = this.audioElements[key].audioSettings.gain;
+
+    if (this.audioElements[key].source) {
+      this.audioElements[key].source.stop();
+    }
+    this.audioElements[key].source = newSource;
+    if (loop !== undefined) {
+      newSource.loop = loop;
+    }
+    newSource.buffer = this.audioElements[key].buffer;
+    newSource.connect(gainNode);
+    gainNode.connect(this.audioContext.destination);
+    newSource.start(0, startTime);
+  }
+
+  pauseSound(key) {
+    if (this.audioElements[key].source) {
+      this.audioElements[key].source.stop();
+      this.audioElements[key].source = null;
+    }
+  }
+
+  getAudioDuration(key) {
+    return this.audioElements[key] ? this.audioElements[key].buffer.duration : 0;
+  }
+
+  setAudioStartTime(key, time) {
+    this.audioElements[key].basic.loopStart = time;
+  }
+
+  playAudioGroup(groupName) {
+    // Audio group: audioGroupWrappers, switchPauseDuration, randAdditionalSwitchPauseDuration, total frequency
+    // Audio wrapper: name, audioSettings, relFrequency, duration, randAdditionalDuration
+    const group = this.audioGroups[groupName];
+    const playMemberSound = () => {
+      let soundToPlay;
+      // randomly choose one to member sound to play
+      let sum = 0;
+      const chosen = group.totalFrequency * Math.random();
+      for (const audioGroupWrapper of group.audioGroupWrappers) {
+        sum += audioGroupWrapper.relFrequency;
+        if (chosen < sum) { // member sound selected
+          soundToPlay = audioGroupWrapper;
+          break;
+        }
+      }
+
+      const pauseLength = group.switchPauseDuration + Math.random() * group.randAdditionalSwitchPauseDuration;
+      const playLength = (soundToPlay.duration + Math.random() * soundToPlay.randAdditionalDuration);
+
+      setTimeout(() => {
+        if (group.isPlaying) {
+          group.soundPlaying = soundToPlay.name;
+          this.play(soundToPlay.name);
+          setTimeout(() => {
+            this.pause(soundToPlay.name);
+            if (group.isPlaying) {
+              playMemberSound();
+            }
+          }, playLength);
+        }
+      }, pauseLength);
+    }
+
+    group.play();
+    playMemberSound();
+  }
+
+  pauseAudioGroup(groupName) {
+    this.audioGroups[groupName].pause();
+    if (this.audioGroups[groupName].soundPlaying) {
+      this.pause(this.audioGroups[groupName].soundPlaying);
+    }
+  }
+
+  playIntermittentSound(key) {
+    const playSoundIntermittently = () => {
+      const pauseLength = this.audioElements[key].audioSettings.pauseDuration + Math.random() * this.audioElements[key].audioSettings.randAdditionalPause;
+      setTimeout(() => {
+        if (this.audioElements[key].audioSettings.isPlaying) {
+          this.playSound(key);
+          playSoundIntermittently();
+        }
+      }, pauseLength);
+    }
+
+    this.audioElements[key].audioSettings.play();
+    playSoundIntermittently();
+  }
+
+  pauseIntermittentSound(key) {
+    this.audioElements[key].audioSettings.pause();
+    this.pauseSound(key);
+  }
+
+  playPartialSound(key) {
+    const playPartialSoundIntermittently = () => {
+      const pauseLength = this.audioElements[key].audioSettings.pauseDuration + Math.random() * this.audioElements[key].audioSettings.randAdditionalPause;
+      const playLength = this.audioElements[key].audioSettings.playDuration + Math.random() * this.audioElements[key].audioSettings.randAdditionalPlay;
+      const audioLength = this.getAudioDuration(key) || 0;
+
+      setTimeout(() => {
+        if (this.audioElements[key].audioSettings.playDuration && this.audioElements[key].audioSettings.isPlaying) {
+          this.playSound(key, true, audioLength * Math.random()); // randomize start audio location
+          setTimeout(() => {
+            this.pauseSound(key);
+            if (this.audioElements[key].audioSettings.playDuration && this.audioElements[key].audioSettings.isPlaying) {
+              playPartialSoundIntermittently();
+            }
+          }, playLength);
+        }
+      }, pauseLength);
+    }
+
+    this.audioElements[key].audioSettings.play();
+    playPartialSoundIntermittently();
+  }
+
+  pausePartialSound (key) {
+    this.audioElements[key].audioSettings.pause();
+    this.pauseSound(key);
   }
 }
