@@ -12,10 +12,10 @@ var soundAvatarGenerator;
 var singleSoundPlayer;
 
 const backgroundSoundGain = {
-  nowhere: 1,
-  people: 0.2,
-  urban: 0.2,
-  nature: 1,
+  nowhere: 0.8,
+  people: 0.1,
+  urban: 0.1,
+  nature: 0.5,
 }
 
 const pages = {
