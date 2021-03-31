@@ -57,10 +57,11 @@ function CanvasControl(canvas, listener, callbackFunc) {
     that._cursorUpFunc(event);
   });
 
-  window.addEventListener('resize', function(event) {
+  resizeFunc = function(event) {
     that.resize();
     that.draw();
-  }, false);
+  }
+  window.addEventListener('resize', resizeFunc, false);
 
   this.invokeCallback();
   this.resize();
@@ -279,119 +280,137 @@ CanvasControl.prototype.useElement = function(selectedElement) {
     }
     
     selectedElement.setState(ELEMENT_STATE.IN_USE);
-  } else if (selectedElement.constructor.name === 'Door') {
+  } else if (selectedElement.constructor.name === 'Door') { // user exits room
     this.listener.setState(ELEMENT_STATE.IDLE);
     selectedElement.selectedDoorSound = this.listener.habbits.doorOpenCloseSound;
     selectedElement.setState(ELEMENT_STATE.IN_USE);
+    listenerInRoom = !listenerInRoom;
+    if (!listenerInRoom) {
+      setTimeout(() => { // wait for door close
+        changePage(pages.setup);
+      }, 3000) 
+    }
   }
+}
+
+CanvasControl.prototype.moveToAndUseElement = function(actor, selectedElement) {
+  const moveStepSize = 2;
+  const setPersonInCluster = (selectedElement) => {
+    clusters[selectedElement.clusterInfo.id].personSettingsForClusterMap[actor.id] = {
+      locationIndex: selectedElement.clusterInfo.index,
+      id: actor.id,
+      icon: actor.icon,
+      personSettings: {
+        workSound: actor.audioProfileParams.workSound,
+        otherSound: actor.audioProfileParams.otherSound,
+        habbits: actor.habbits
+      },
+      isListener: actor.isListener
+    };
+  }
+  const startMoving = () => {
+    actor.setState(ELEMENT_STATE.WALKING);
+    let moveInterval = setInterval(() => {
+      if (!this._canvas) { // object deleted
+        return;
+      }
+      if (selectedElement !== actor.itemInUse) { // user choses anther target while walking
+        clearInterval(moveInterval);
+        return;
+      }
+
+      if (Math.abs(selectedElement.position.x - actor.position.x) > moveStepSize) {
+        if (selectedElement.position.x > actor.position.x) {
+          actor.position.x += moveStepSize;
+          actor.orientation = 90;
+        } else {
+          actor.position.x -= moveStepSize;
+          actor.orientation = -90;
+        }
+      } else if (Math.abs(selectedElement.position.y - actor.position.y) > moveStepSize) {
+        if (selectedElement.position.y > actor.position.y) {
+          actor.position.y += moveStepSize;
+          actor.orientation = 180;
+        } else {
+          actor.position.y -= moveStepSize;
+          actor.orientation = 0;
+        }
+      } else { // reaches destination
+        actor.position.x = selectedElement.position.x;
+        actor.position.y = selectedElement.position.y;
+        this.useElement(selectedElement);
+        actor.orientation = selectedElement.orientation;
+
+        if (actor === this.listener && selectedElement.constructor.name === 'Chair') { // listener can be in the middle of walking
+          setPersonInCluster(selectedElement);
+        }
+        
+        clearInterval(moveInterval);
+      }
+      this.invokeCallback();
+      this.draw();
+      
+    }, 20);
+  }
+
+  const selectElement = (selectedElement) => {
+    let actionDelay = 0;
+
+    if (selectedElement.constructor.name === 'Chair') {
+      if (selectedElement.state !== ELEMENT_STATE.AVAILABLE) {
+        return;
+      }
+      selectedElement.setState(ELEMENT_STATE.RESERVED);
+    } else if (selectedElement.constructor.name === 'Door') {
+      // don't need to do anything
+    }
+
+    if(actor.itemInUse) {
+      if (actor.itemInUse.constructor.name === 'Chair') {
+        const itemInUse = actor.itemInUse;
+        const delay = itemInUse.stateChangeDelay;
+        actionDelay += delay;
+        actionDelay += actor.stateChangeDelay;
+
+        if (itemInUse.state === ELEMENT_STATE.RESERVED) {
+          itemInUse.setState(ELEMENT_STATE.AVAILABLE);
+        } else if (itemInUse.state === ELEMENT_STATE.IN_USE) {
+          setTimeout(() => {
+            itemInUse.setState(ELEMENT_STATE.AVAILABLE);
+          }, delay);
+        }
+        // update cluster map for generating new room after user exits
+        delete clusters[itemInUse.clusterInfo.id].personSettingsForClusterMap[actor.id];
+        if (actor !== this.listener) { // listener can be in the middle of walking
+          setPersonInCluster(selectedElement);
+        }
+      }
+    }
+    if (actor.state === ELEMENT_STATE.WORKING) {
+      actor.setState(ELEMENT_STATE.PREPARING_TO_GO);
+    }
+    
+
+    actor.itemInUse = selectedElement;
+    
+    
+    setTimeout(() => {
+      startMoving();
+    }, actionDelay);
+  }
+
+  selectElement(selectedElement);
 }
 
 CanvasControl.prototype._cursorUpFunc = function(event) {
   let cursorPosition = this.getCursorPosition(event);
   let selectedElement = this.getNearestElement(cursorPosition);
-  
-  const moveStepSize = 2;
 
   if (selectedElement) {
-    // useElement called when the person reaches selectedElement
-    // const useElement = (selectedElement) => {
-    //   if (selectedElement.constructor.name === 'Chair') {
-    //     this.listener.setState(ELEMENT_STATE.PREPARING_WORK);
-    //     if (this.listener.habbits.moveOnChair) {
-    //       selectedElement.enableMovingCreak();
-    //     }
-    //     if (this.listener.habbits.chairSlideSound) {
-    //       selectedElement.selectedSlideSound = this.listener.habbits.chairSlideSound;
-    //     }
-        
-    //     selectedElement.setState(ELEMENT_STATE.IN_USE);
-    //   } else if (selectedElement.constructor.name === 'Door') {
-    //     this.listener.setState(ELEMENT_STATE.IDLE);
-    //     selectedElement.selectedDoorSound = this.listener.habbits.doorOpenCloseSound;
-    //     selectedElement.setState(ELEMENT_STATE.IN_USE);
-    //   }
-    // }
-    
-    const startMoving = () => {
-      this.listener.setState(ELEMENT_STATE.WALKING);
-      let moveInterval = setInterval(() => {
-        if (selectedElement !== this.listener.itemInUse) { // user choses anther target while walking
-          clearInterval(moveInterval);
-          return;
-        }
-
-        if (Math.abs(selectedElement.position.x - this.listener.position.x) > moveStepSize) {
-          if (selectedElement.position.x > this.listener.position.x) {
-            this.listener.position.x += moveStepSize;
-            this.listener.orientation = 90;
-          } else {
-            this.listener.position.x -= moveStepSize;
-            this.listener.orientation = -90;
-          }
-        } else if (Math.abs(selectedElement.position.y - this.listener.position.y) > moveStepSize) {
-          if (selectedElement.position.y > this.listener.position.y) {
-            this.listener.position.y += moveStepSize;
-            this.listener.orientation = 180;
-          } else {
-            this.listener.position.y -= moveStepSize;
-            this.listener.orientation = 0;
-          }
-        } else { // reaches destination
-          this.listener.position.x = selectedElement.position.x;
-          this.listener.position.y = selectedElement.position.y;
-          this.useElement(selectedElement);
-          this.listener.orientation = selectedElement.orientation;
-          
-          clearInterval(moveInterval);
-        }
-        this.invokeCallback();
-        this.draw();
-        
-      }, 20);
-    }
-
-    const selectElement = (selectedElement) => {
-      let actionDelay = 0;
-
-      if (selectedElement.constructor.name === 'Chair') {
-        if (selectedElement.state !== ELEMENT_STATE.AVAILABLE) {
-          return;
-        }
-        selectedElement.setState(ELEMENT_STATE.RESERVED);
-      } else if (selectedElement.constructor.name === 'Door') {
-        // don't need to do anything
-      }
-
-      if(this.listener.itemInUse) {
-        if (this.listener.itemInUse.constructor.name === 'Chair') {
-          const itemInUse = this.listener.itemInUse;
-          const delay = itemInUse.stateChangeDelay;
-          actionDelay += delay;
-          actionDelay += this.listener.stateChangeDelay;
-
-          if (itemInUse.state === ELEMENT_STATE.RESERVED) {
-            itemInUse.setState(ELEMENT_STATE.AVAILABLE);
-          } else if (itemInUse.state === ELEMENT_STATE.IN_USE) {
-            setTimeout(() => {
-              itemInUse.setState(ELEMENT_STATE.AVAILABLE);
-            }, delay);
-          }
-        }
-      }
-      if (this.listener.state === ELEMENT_STATE.WORKING) {
-        this.listener.setState(ELEMENT_STATE.PREPARING_TO_GO);
-      }
-      this.listener.itemInUse = selectedElement;
-      
-      setTimeout(() => {
-        startMoving();
-      }, actionDelay);
-    }
-
     if (this.listener.state === ELEMENT_STATE.PREPARING_TO_GO || this.listener.state === ELEMENT_STATE.PREPARING_WORK) {
       return;
     }
-    selectElement(selectedElement);
+    this.moveToAndUseElement(this.listener, selectedElement);
   }
 };
 

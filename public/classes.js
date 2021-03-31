@@ -326,10 +326,12 @@ class SoundSource extends CanvasElement {
 }
 
 class Person extends SoundSource {
-  constructor(state, icon, position, orientation, audioContext, audioScene, audioProfile, habbits, isListener) {
+  constructor(id, state, icon, position, orientation, audioContext, audioScene, audioProfile, audioProfileParams, habbits, isListener) {
     const alpha = isListener ? 1 : 0.7;
     const layer = isListener ? 11 : 10;
     super(state, icon, position, 0, orientation, PERSON_SIZE, PERSON_SIZE, alpha, false, layer, audioContext, audioScene, audioProfile, isListener);
+    this.id = id;
+    this.audioProfileParams = audioProfileParams;
     this.habbits = habbits;
     this.itemInUse = null;
   }
@@ -408,7 +410,7 @@ class Person extends SoundSource {
   }
 }
 class Chair extends SoundSource {
-  constructor(state, position, rotation, audioContext, audioScene) {
+  constructor(state, position, rotation, audioContext, audioScene, clusterInfo) {
     super(
       state,
       icons['chair'],
@@ -442,7 +444,7 @@ class Chair extends SoundSource {
           SOUND_SRCS.chair.movingCreak,
           1,
           AUDIO_SETTING.INTERMITTENT,
-          5000,
+          60000,
           200000
         ),
         [SOUND_NAME.CHAIR_SITTING_CREAK]: new AudioSettings(
@@ -454,6 +456,7 @@ class Chair extends SoundSource {
     );
     this.selectedSlideSound = SOUND_NAME.CHAIR_SLIDE_QUICK; // set a sound as default in case none was selected
     this.movingCreakEnabled = false;
+    this.clusterInfo = clusterInfo;
   }
 
   get stateChangeDelay() {
@@ -577,11 +580,17 @@ class AudioContextAndScene {
   }
   
   // methods for adding elements to room
-  getNewPerson(state, icon, position, orientation, audioProfile, habbits, isListener) {
-    return new Person(state, icon, position, orientation, this.audioContext, this.audioScene, audioProfile, habbits, isListener);
+  getNewPerson(id, state, icon, position, orientation, audioProfile, audioProfileParams, habbits, isListener) {
+    const newPerson = new Person(id, state, icon, position, orientation, this.audioContext, this.audioScene, audioProfile, audioProfileParams, habbits, isListener);
+    personMap[id] = newPerson;
+    if (isListener) {
+      listener = newPerson;
+    }
+    return newPerson;
   }
 
   makeNewPersonWithSettings(
+    id,
     state,
     icon,
     position,
@@ -589,14 +598,14 @@ class AudioContextAndScene {
     {
       workSound,
       otherSound,
-      habbit
+      habbits
     },
     isListener
   ) {
     const workSounds = [];
     const humanSounds = [];
     const audioProfile = {};
-    const habbits = {};
+    const translatedHabbits = {};
     const gainCoefficient = isListener ? 1 : 1;
 
     // create work sounds
@@ -891,47 +900,52 @@ class AudioContextAndScene {
     let chairSlideSound = SOUND_NAME.CHAIR_SLIDE_SLOW; // default chair slide sound
     let doorOpenCloseSound = SOUND_NAME.DOOR_GENTLE; // default door open/close sound
     let moveOnChair = false; // default move on chair setting
-    if (habbit) {
-      if (habbit.chairSlideSound === PERSON_SETTING.HABBIT.CHAIR_SLIDE_SOUND.slow) {
+    if (habbits) {
+      if (habbits.chairSlideSound === PERSON_SETTING.HABBIT.CHAIR_SLIDE_SOUND.slow) {
         chairSlideSound = SOUND_NAME.CHAIR_SLIDE_SLOW;
-      } else if (habbit.chairSlideSound === PERSON_SETTING.HABBIT.CHAIR_SLIDE_SOUND.quick) {
+      } else if (habbits.chairSlideSound === PERSON_SETTING.HABBIT.CHAIR_SLIDE_SOUND.quick) {
         chairSlideSound = SOUND_NAME.CHAIR_SLIDE_QUICK;
       }
 
-      if (habbit.doorOpenCloseSound === PERSON_SETTING.HABBIT.DOOR_OPEN_CLOSE_SOUND.gentle) {
+      if (habbits.doorOpenCloseSound === PERSON_SETTING.HABBIT.DOOR_OPEN_CLOSE_SOUND.gentle) {
         doorOpenCloseSound = SOUND_NAME.DOOR_GENTLE;
-      } else if (habbit.doorOpenCloseSound === PERSON_SETTING.HABBIT.DOOR_OPEN_CLOSE_SOUND.slam) {
+      } else if (habbits.doorOpenCloseSound === PERSON_SETTING.HABBIT.DOOR_OPEN_CLOSE_SOUND.hard) {
         doorOpenCloseSound = SOUND_NAME.DOOR_SLAM;
       }
 
-      if (habbit.moveOnChair !== undefined) {
-        moveOnChair = habbit.moveOnChair;
+      if (habbits.moveOnChair !== undefined) {
+        moveOnChair = habbits.moveOnChair;
       }
     }
-    habbits.chairSlideSound = chairSlideSound;
-    habbits.doorOpenCloseSound = doorOpenCloseSound;
-    habbits.moveOnChair = moveOnChair;
+    translatedHabbits.chairSlideSound = chairSlideSound;
+    translatedHabbits.doorOpenCloseSound = doorOpenCloseSound;
+    translatedHabbits.moveOnChair = moveOnChair;
 
     return this.getNewPerson(
+      id,
       state,
       icon, // image
       position, // position
       orientation,
       audioProfile,
-      habbits,
+      {
+        workSound,
+        otherSound,
+      },
+      translatedHabbits,
       isListener
     )
   }
 
-  getNewChair(state, position, rotation) {
-    return new Chair(state, position, rotation, this.audioContext, this.audioScene);
+  getNewChair(state, position, rotation, clusterInfo) {
+    return new Chair(state, position, rotation, this.audioContext, this.audioScene, clusterInfo);
   }
 
   getNewDoor(state, position, rotation) {
     return new Door(state, position, rotation, this.audioContext, this.audioScene);
   }
 
-  getCluster({x, y}, tableType, chairNum, rotation, personSettingsList) {
+  getCluster(id, {x, y}, tableType, chairNum, rotation, personSettingsForClusterMap) {
     const clusterElements = [];
     const chairCoordinates = [];
     let radius;
@@ -952,45 +966,62 @@ class AudioContextAndScene {
         x: topChairCoordinates.x + x,
         y: topChairCoordinates.y + y,
       });
-      clusterElements.push(this.getNewChair(
+      const chair0 = this.getNewChair(
         ELEMENT_STATE.AVAILABLE,
         {
           x: topChairCoordinates.x + x,
           y: topChairCoordinates.y + y,
           z: CHAIR_HEIGHT
         },
-        180 + rotation
-      ));
+        180 + rotation,
+        {
+          id: id,
+          index: 0
+        }
+      );
+      clusterElements.push(chair0);
+
       // bottom left chair
       const botLeftChairCoordinates = rotateCoordinates(unitLen, 150 + rotation);
       chairCoordinates.push({
         x: botLeftChairCoordinates.x + x,
         y: botLeftChairCoordinates.y + y,
       });
-      clusterElements.push(this.getNewChair(
+      const chair1 = this.getNewChair(
         ELEMENT_STATE.AVAILABLE,
         {
           x: botLeftChairCoordinates.x + x,
           y: botLeftChairCoordinates.y + y,
           z: CHAIR_HEIGHT
         },
-        60 + rotation
-      ));
+        60 + rotation,
+        {
+          id: id,
+          index: 1
+        }
+      );
+      clusterElements.push(chair1);
+
       // bottom right chair
       const botRightChairCoordinates = rotateCoordinates(unitLen, 30 + rotation);
       chairCoordinates.push({
         x: botRightChairCoordinates.x + x,
         y: botRightChairCoordinates.y + y,
       });
-      clusterElements.push(this.getNewChair(
+      const chair2 = this.getNewChair(
         ELEMENT_STATE.AVAILABLE,
         {
           x: botRightChairCoordinates.x + x,
           y: botRightChairCoordinates.y + y,
           z: CHAIR_HEIGHT
         },
-        -60 + rotation
-      ));
+        -60 + rotation,
+        {
+          id: id,
+          index: 2
+        }
+      );
+      clusterElements.push(chair2);
     } else if (chairNum === 2) {
       const unitLen = {x: radius + CHAIR_LENGTH * 0.4, y: 0};
       // top chair
@@ -999,48 +1030,62 @@ class AudioContextAndScene {
         x: topChairCoordinates.x + x,
         y: topChairCoordinates.y + y,
       });
-      clusterElements.push(this.getNewChair(
+      const chair0 = this.getNewChair(
         ELEMENT_STATE.AVAILABLE,
         {
           x: topChairCoordinates.x + x,
           y: topChairCoordinates.y + y,
           z: CHAIR_HEIGHT
         },
-        180 + rotation
-      ));
+        180 + rotation,
+        {
+          id: id,
+          index: 0
+        }
+      );
+      clusterElements.push(chair0);
       // bottom chair
       const botChairCoordinates = rotateCoordinates(unitLen, 90 + rotation);
       chairCoordinates.push({
         x: botChairCoordinates.x + x,
         y: botChairCoordinates.y + y,
       });
-      clusterElements.push(this.getNewChair(
+      const chair1 = this.getNewChair(
         ELEMENT_STATE.AVAILABLE,
         {
           x: botChairCoordinates.x + x,
           y: botChairCoordinates.y + y,
           z: CHAIR_HEIGHT
         },
-        rotation
-      ));
+        rotation,
+        {
+          id: id,
+          index: 1
+        }
+      );
+      clusterElements.push(chair1);
     }
 
     // populate chairs with people according to the index given and settings of the person
-    if (personSettingsList && personSettingsList.length) {
-      for (const personSettings of personSettingsList) {
-        const chair = clusterElements[personSettings.locationIndex + 1]; // first one is the table
+    if (personSettingsForClusterMap) {
+      for (const [clusterId, personSettingsForCluster] of Object.entries(personSettingsForClusterMap)) {
+        const chair = clusterElements[personSettingsForCluster.locationIndex + 1]; // first one is the table
         const newPerson = this.makeNewPersonWithSettings(
+          personSettingsForCluster.id,
           ELEMENT_STATE.WORKING,
-          personSettings.icon,
-          {...chairCoordinates[personSettings.locationIndex], z: 1},
+          personSettingsForCluster.icon,
+          {...chairCoordinates[personSettingsForCluster.locationIndex], z: 1},
           chair.orientation,
-          personSettings.personSettings,
-          personSettings.isListener
+          personSettingsForCluster.isListener ? listenerAudioSettings : personSettingsForCluster.personSettings,
+          personSettingsForCluster.isListener
         );
         newPerson.itemInUse = chair;
         newPerson.itemInUse.setState(ELEMENT_STATE.IN_USE);
         if (newPerson.habbits.moveOnChair) {
           newPerson.itemInUse.enableMovingCreak();
+        }
+        if (newPerson.habbits.chairSlideSound !== undefined) {
+          newPerson.itemInUse.selectedSlideSound = newPerson.habbits.chairSlideSound;
         }
         clusterElements.push(newPerson);
       }

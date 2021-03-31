@@ -7,6 +7,8 @@ var selectedBackgroundSound;
 var backgroundSoundMuted = false;
 var muted = true;
 
+var resizeFunc;
+
 var avatarAudioProfile = {};
 var soundAvatarGenerator;
 var singleSoundPlayer;
@@ -236,6 +238,8 @@ const updateWorkSounds = () => {
   const gainCoefficient = 0.6;
   const avatarPlaying = soundAvatarGenerator.isAvatarPlaying;
 
+  listenerAudioSettings.workSound = {};
+
   if (avatarPlaying) {
     soundAvatarGenerator.pauseAvatar();
   }
@@ -258,6 +262,7 @@ const updateWorkSounds = () => {
         5000, // duration
         5000, // random additional duration
       ));
+      listenerAudioSettings.workSound.type = PERSON_SETTING.WORK_SOUND.TYPE.slow;
     } else {
       workSounds.push(new AudioGroupWrapper(
         'type', // name
@@ -274,6 +279,7 @@ const updateWorkSounds = () => {
         5000, // duration
         5000, // random additional duration
       ));
+      listenerAudioSettings.workSound.type = PERSON_SETTING.WORK_SOUND.TYPE.fast;
     }
   }
   if (clicking) {
@@ -301,6 +307,7 @@ const updateWorkSounds = () => {
       1500, // duration
       0, // random additional duration
     ));
+    listenerAudioSettings.workSound.click = PERSON_SETTING.WORK_SOUND.CLICK.default;
   }
   if (reading) {
     workSounds.push(new AudioGroupWrapper(
@@ -314,6 +321,7 @@ const updateWorkSounds = () => {
       2000, // duration
       0, // random additional duration
     ));
+    listenerAudioSettings.workSound.fageFlip = PERSON_SETTING.WORK_SOUND.PAGE_FLIP.default;
   }
 
   // configure switch task pause for work sounds
@@ -334,7 +342,7 @@ const updateWorkSounds = () => {
   }
 }
 
-const updateHumanSounds = () => {
+const updateOtherSounds = () => {
   const humanSounds = [];
   const sniffle = document.querySelector('#sniffle').checked;
   const movementOnChair = document.querySelector('#movement-on-chair').checked;
@@ -349,6 +357,11 @@ const updateHumanSounds = () => {
 
   const gainCoefficient = 0.6;
   const avatarPlaying = soundAvatarGenerator.isAvatarPlaying;
+
+  listenerAudioSettings.otherSound = {
+    zipUnzip: PERSON_SETTING.SPECIAL_SOUND.ZIP_UNZIP.default
+  };
+  listenerAudioSettings.habbits = {};
 
   if (avatarPlaying) {
     soundAvatarGenerator.pauseAvatar();
@@ -378,6 +391,7 @@ const updateHumanSounds = () => {
       nonDisturbingPause, // duration
       nonDisturbingRandAdditionalPause, // random additional duration
     ));
+    listenerAudioSettings.otherSound.sniffle = PERSON_SETTING.GENERAL_SOUND.SNIFFLE.default;
   }
   if (movementOnChair) {
     humanSounds.push(new AudioGroupWrapper(
@@ -391,20 +405,26 @@ const updateHumanSounds = () => {
       4000, // duration
       10000, // random additional duration
     ));
+    listenerAudioSettings.habbits.moveOnChair = true;
+  } else {
+    listenerAudioSettings.habbits.moveOnChair = false;
   }
   if (cough) {
     let source, source2;
     let gain, gain2;
+    let setting;
     if ($('input[name="pitch"]:checked').val() === 'lower') {
       source = SOUND_SRCS.cough.male;
       source2 = SOUND_SRCS.cough.male2;
       gain = 0.5;
       gain2 = 0.5;
+      setting = PERSON_SETTING.GENERAL_SOUND.COUGH.male;
     } else if ($('input[name="pitch"]:checked').val() === 'higher') {
       source = SOUND_SRCS.cough.female;
       source2 = SOUND_SRCS.cough.female2;
       gain = 0.2;
       gain2 = 0.3;
+      setting = PERSON_SETTING.GENERAL_SOUND.COUGH.female;
     }
     humanSounds.push(new AudioGroupWrapper(
       'cough', // name
@@ -432,20 +452,24 @@ const updateHumanSounds = () => {
       disturbingPause, // duration
       disturbingRandAdditionalPause, // random additional duration
     ));
+    listenerAudioSettings.otherSound.cough = setting;
   }
   if (sneeze) {
     let source, source2;
     let gain, gain2;
+    let setting;
     if ($('input[name="pitch"]:checked').val() === 'lower') {
       source = SOUND_SRCS.sneeze.male;
       source2 = SOUND_SRCS.sneeze.male2;
       gain = 0.2;
       gain2 = 0.3;
+      setting = PERSON_SETTING.GENERAL_SOUND.SNEEZE.male;
     } else if ($('input[name="pitch"]:checked').val() === 'higher') {
       source = SOUND_SRCS.sneeze.female;
       source2 = SOUND_SRCS.sneeze.female2;
       gain = 0.6;
       gain2 = 0.5;
+      setting = PERSON_SETTING.GENERAL_SOUND.SNEEZE.female;
     }
     humanSounds.push(new AudioGroupWrapper(
       'sneeze', // name
@@ -473,20 +497,24 @@ const updateHumanSounds = () => {
       disturbingPause, // duration
       disturbingRandAdditionalPause, // random additional duration
     ));
+    listenerAudioSettings.otherSound.sneeze = setting;
   }
   if (throatClear) {
     let source, source2;
     let gain, gain2;
+    let setting;
     if ($('input[name="pitch"]:checked').val() === 'lower') {
       source = SOUND_SRCS.throatClear.male;
       source2 = SOUND_SRCS.throatClear.male2;
       gain = 0.2;
       gain2 = 0.2;
+      setting = PERSON_SETTING.GENERAL_SOUND.THROAT_CLEAR.male;
     } else if ($('input[name="pitch"]:checked').val() === 'higher') {
       source = SOUND_SRCS.throatClear.female;
       source2 = SOUND_SRCS.throatClear.female2;
       gain = 0.1;
       gain2 = 0.1;
+      setting = PERSON_SETTING.GENERAL_SOUND.THROAT_CLEAR.female;
     }
     humanSounds.push(new AudioGroupWrapper(
       'throatClear', // name
@@ -514,6 +542,7 @@ const updateHumanSounds = () => {
       disturbingPause, // duration
       disturbingRandAdditionalPause, // random additional duration
     ));
+    listenerAudioSettings.otherSound.throatClear = setting;
   }
 
   if (humanSounds.length) {
@@ -525,6 +554,25 @@ const updateHumanSounds = () => {
 
   if (avatarPlaying) {
     soundAvatarGenerator.playAvatar();
+  }
+
+  // event related sounds
+  if ($('input[name="footsteps"]:checked').val() === 'slow') {
+    listenerAudioSettings.otherSound.footstep = PERSON_SETTING.SPECIAL_SOUND.FOOTSTEP.slow;
+  } else if ($('input[name="footsteps"]:checked').val() === 'fast') {
+    listenerAudioSettings.otherSound.footstep = PERSON_SETTING.SPECIAL_SOUND.FOOTSTEP.fast;
+  }
+
+  if ($('input[name="door"]:checked').val() === 'gentle') {
+    listenerAudioSettings.habbits.doorOpenCloseSound = PERSON_SETTING.HABBIT.DOOR_OPEN_CLOSE_SOUND.gentle;
+  } else if ($('input[name="door"]:checked').val() === 'hard') {
+    listenerAudioSettings.habbits.doorOpenCloseSound = PERSON_SETTING.HABBIT.DOOR_OPEN_CLOSE_SOUND.hard;
+  }
+
+  if ($('input[name="chair"]:checked').val() === 'slow') {
+    listenerAudioSettings.habbits.doorOpenCloseSound = PERSON_SETTING.HABBIT.CHAIR_SLIDE_SOUND.slow;
+  } else if ($('input[name="chair"]:checked').val() === 'quick') {
+    listenerAudioSettings.habbits.doorOpenCloseSound = PERSON_SETTING.HABBIT.CHAIR_SLIDE_SOUND.quick;
   }
 }
 
@@ -656,6 +704,10 @@ document.querySelector('#pg-2-back-btn').onclick = () => {
   changePage(pages.landing);
 };
 
+document.querySelector('#pg-3-back-btn').onclick = () => {
+  changePage(pages.setup);
+};
+
 document.querySelector('#listen-to-avatar-btn').addEventListener('click', playPauseAvatarSound);
 
 document.querySelectorAll('.work-sound-toggle').forEach(toggle => {
@@ -666,7 +718,7 @@ document.querySelectorAll('.work-sound-toggle').forEach(toggle => {
 
 document.querySelectorAll('.human-sound-toggle').forEach(toggle => {
   toggle.addEventListener('change', () => {
-    updateHumanSounds();
+    updateOtherSounds();
   })
 })
 
@@ -679,7 +731,9 @@ function setUpSetupPage() {
 }
 
 function setUpRoomPage() {
-
+  if (soundAvatarGenerator.isAvatarPlaying) {
+    playPauseAvatarSound.bind(document.querySelector('#listen-to-avatar-btn'))();
+  }
 }
 
 function exitLandingPage() {
@@ -691,7 +745,28 @@ function exitSetupPage() {
 }
 
 function exitRoomPage() {
-  
+  const canvasContainer = document.querySelector('#canvas-container');
+  const oldCanvas = canvasContainer.querySelector('canvas');
+  const listener = canvasControl.listener;
+  const state =
+    listener.state === ELEMENT_STATE.PREPARING_TO_GO
+    || listener.state === ELEMENT_STATE.WORKING
+    || listener.state === ELEMENT_STATE.PREPARING_WORK
+    ? ELEMENT_STATE.WORKING
+    : ELEMENT_STATE.IDLE;
+
+  listenerStatus = {
+    state: state,
+    position: {x: listener.position.x, y: listener.position.y, z: listener.position.z},
+    orientation: listener.orientation,
+  }
+  if (listener?.itemInUse?.constructor?.name === 'Chair' && listener.state !== ELEMENT_STATE.WORKING) {
+    delete clusters[listener.itemInUse.clusterInfo.id].personSettingsForClusterMap[listener.id];
+    listener.itemInUse = null;
+  }
+  newAudio();
+  window.removeEventListener('resize', resizeFunc);
+  canvasContainer.removeChild(oldCanvas);
 }
 
 function setSelectedBackgroundSound(value) {

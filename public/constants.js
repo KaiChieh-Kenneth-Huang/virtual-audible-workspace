@@ -122,7 +122,7 @@ const PERSON_SETTING = {
     },
     DOOR_OPEN_CLOSE_SOUND: {
       gentle: 'gentle',
-      slam: 'slam',
+      hard: 'hard',
     },
   },
 }
