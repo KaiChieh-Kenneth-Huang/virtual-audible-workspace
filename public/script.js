@@ -14,7 +14,7 @@ var soundAvatarGenerator;
 var singleSoundPlayer;
 
 const backgroundSoundGain = {
-  nowhere: 0.8,
+  nowhere: 0.5,
   people: 0.1,
   urban: 0.1,
   nature: 0.5,
