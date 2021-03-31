@@ -28,7 +28,7 @@ const pages = {
 var curPage = pages.landing;
 
 const playBackgroundSound = (key) => {
-  const randStartTime = Math.random() * backgrounAudioElements[key].buffer.duration;
+  const randStartTime = 1 + Math.random() * (backgrounAudioElements[key].buffer.duration - 1);
   if (currentlyPlayingBackgroundSound) {
     currentlyPlayingBackgroundSound.stop();
     currentlyPlayingBackgroundSound = null;
@@ -867,6 +867,8 @@ function playMonoSound(key, audioElements, loop, startTime) {
   if (loop !== undefined) {
     newSource.loop = loop;
   }
+  newSource.loopStart = 1;
+  newSource.loopEnd = backgrounAudioElements[key].buffer.duration - 1;
   newSource.buffer = audioElements[key].buffer;
   newSource.connect(gainNode);
   gainNode.connect(audioContext.destination);
