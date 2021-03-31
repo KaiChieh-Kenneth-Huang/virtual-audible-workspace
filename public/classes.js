@@ -699,14 +699,14 @@ class AudioContextAndScene {
       // add put laptop on table sound on start work
       audioProfile[SOUND_NAME.PLACE_LAPTOP] = new AudioSettings(
         SOUND_SRCS.preparation.placeLaptop,
-        1 * gainCoefficient,
+        0.3 * gainCoefficient,
         AUDIO_SETTING.DEFAULT
       )
     }
     if (workSound.pageFlip) {
       audioProfile[SOUND_NAME.PLACE_BOOK] = new AudioSettings(
         SOUND_SRCS.preparation.placeBook,
-        1 * gainCoefficient,
+        0.3 * gainCoefficient,
         AUDIO_SETTING.DEFAULT
       )
     }
@@ -716,12 +716,12 @@ class AudioContextAndScene {
       if (otherSound.zipUnzip === PERSON_SETTING.SPECIAL_SOUND.ZIP_UNZIP.default) {
         audioProfile[SOUND_NAME.ZIP] = new AudioSettings(
           SOUND_SRCS.preparation.zip,
-          0.3 * gainCoefficient,
+          0.1 * gainCoefficient,
           AUDIO_SETTING.DEFAULT,
         );
         audioProfile[SOUND_NAME.UNZIP] = new AudioSettings(
           SOUND_SRCS.preparation.unzip,
-          0.3 * gainCoefficient,
+          0.1 * gainCoefficient,
           AUDIO_SETTING.DEFAULT,
         );
       }
