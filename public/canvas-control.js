@@ -251,15 +251,36 @@ CanvasControl.prototype.addElements = function(elements) {
   this.draw();
 }
 
+CanvasControl.prototype.removeElement = function(id) {
+  for (let i = 0; i < this._elements.length; i++) {
+    const element = this._elements[i];
+    if (element.id === id) {
+      element.pauseAllSounds();
+      this._elements.splice(i, 1);
+      if (element.isListener) {
+        this.listener = null;
+      }
+      break;
+    }
+  }
+  this.invokeCallback();
+  this.draw();
+}
+
 CanvasControl.prototype._cursorMoveFunc = function(event) {
   let cursorPosition = this.getCursorPosition(event);
   let nearestElement = this.getNearestElement(cursorPosition);
   
   if (
     nearestElement
-    && nearestElement.state === ELEMENT_STATE.AVAILABLE
-    && this.listener.state !== ELEMENT_STATE.PREPARING_TO_GO
-    && this.listener.state !== ELEMENT_STATE.PREPARING_WORK
+    && (
+      (
+        nearestElement.state === ELEMENT_STATE.AVAILABLE
+        && this.listener.state !== ELEMENT_STATE.PREPARING_TO_GO
+        && this.listener.state !== ELEMENT_STATE.PREPARING_WORK
+      )
+      || nearestElement.constructor.name === 'Door'
+    )
   ) {
     this._canvas.style.cursor = 'pointer';
     return true;
@@ -269,27 +290,42 @@ CanvasControl.prototype._cursorMoveFunc = function(event) {
   }
 };
 
-CanvasControl.prototype.useElement = function(selectedElement) {
+CanvasControl.prototype.useElement = function(actor, selectedElement) {
   if (selectedElement.constructor.name === 'Chair') {
-    this.listener.setState(ELEMENT_STATE.PREPARING_WORK);
-    if (this.listener.habbits.moveOnChair) {
+    actor.setState(ELEMENT_STATE.PREPARING_WORK);
+    if (actor.habbits.moveOnChair) {
       selectedElement.enableMovingCreak();
     }
-    if (this.listener.habbits.chairSlideSound) {
-      selectedElement.selectedSlideSound = this.listener.habbits.chairSlideSound;
+    if (actor.habbits.chairSlideSound) {
+      selectedElement.selectedSlideSound = actor.habbits.chairSlideSound;
     }
     
     selectedElement.setState(ELEMENT_STATE.IN_USE);
-  } else if (selectedElement.constructor.name === 'Door') { // user exits room
-    this.listener.setState(ELEMENT_STATE.IDLE);
-    selectedElement.selectedDoorSound = this.listener.habbits.doorOpenCloseSound;
+  } else if (selectedElement.constructor.name === 'Door') {
+    actor.setState(ELEMENT_STATE.IDLE);
+    selectedElement.selectedDoorSound = actor.habbits.doorOpenCloseSound;
     selectedElement.setState(ELEMENT_STATE.IN_USE);
-    listenerInRoom = !listenerInRoom;
-    if (!listenerInRoom) {
-      setTimeout(() => { // wait for door close
-        changePage(pages.setup);
-      }, 3000) 
+    
+    delete personMap[actor.id];
+    this.removeElement(actor.id);
+    if (actor === this.listener) { // user exits room
+      listenerInRoom = !listenerInRoom;
+      if (!listenerInRoom) {
+        setTimeout(() => { // wait for door close
+          changePage(pages.setup);
+        }, 3000) 
+      }
     }
+  }
+}
+
+CanvasControl.prototype.enterDoor = function(actor, door) {
+  if (door.constructor.name === 'Door') {
+    if (actor === this.listener) { // user exits room
+      listenerInRoom = !listenerInRoom;
+    }
+    door.selectedDoorSound = actor.habbits.doorOpenCloseSound;
+    door.setState(ELEMENT_STATE.IN_USE);
   }
 }
 
@@ -338,7 +374,7 @@ CanvasControl.prototype.moveToAndUseElement = function(actor, selectedElement) {
       } else { // reaches destination
         actor.position.x = selectedElement.position.x;
         actor.position.y = selectedElement.position.y;
-        this.useElement(selectedElement);
+        this.useElement(actor, selectedElement);
         actor.orientation = selectedElement.orientation;
 
         if (actor === this.listener && selectedElement.constructor.name === 'Chair') { // listener can be in the middle of walking
@@ -353,7 +389,7 @@ CanvasControl.prototype.moveToAndUseElement = function(actor, selectedElement) {
     }, 20);
   }
 
-  const selectElement = (selectedElement) => {
+  const selectElement = (actor, selectedElement) => {
     let actionDelay = 0;
 
     if (selectedElement.constructor.name === 'Chair') {
@@ -361,6 +397,7 @@ CanvasControl.prototype.moveToAndUseElement = function(actor, selectedElement) {
         return;
       }
       selectedElement.setState(ELEMENT_STATE.RESERVED);
+      this.draw();
     } else if (selectedElement.constructor.name === 'Door') {
       // don't need to do anything
     }
@@ -381,10 +418,11 @@ CanvasControl.prototype.moveToAndUseElement = function(actor, selectedElement) {
         }
         // update cluster map for generating new room after user exits
         delete clusters[itemInUse.clusterInfo.id].personSettingsForClusterMap[actor.id];
-        if (actor !== this.listener) { // listener can be in the middle of walking
-          setPersonInCluster(selectedElement);
-        }
       }
+    }
+    if (actor !== this.listener && selectedElement.constructor.name === 'Chair') { // listener can be in the middle of walking
+      console.log('added to cluster')
+      setPersonInCluster(selectedElement);
     }
     if (actor.state === ELEMENT_STATE.WORKING) {
       actor.setState(ELEMENT_STATE.PREPARING_TO_GO);
@@ -399,7 +437,7 @@ CanvasControl.prototype.moveToAndUseElement = function(actor, selectedElement) {
     }, actionDelay);
   }
 
-  selectElement(selectedElement);
+  selectElement(actor, selectedElement);
 }
 
 CanvasControl.prototype._cursorUpFunc = function(event) {
@@ -410,7 +448,9 @@ CanvasControl.prototype._cursorUpFunc = function(event) {
     if (this.listener.state === ELEMENT_STATE.PREPARING_TO_GO || this.listener.state === ELEMENT_STATE.PREPARING_WORK) {
       return;
     }
-    this.moveToAndUseElement(this.listener, selectedElement);
+    if (selectedElement.constructor.name === 'Chair' || selectedElement.constructor.name === 'Door') {
+      this.moveToAndUseElement(this.listener, selectedElement);
+    }
   }
 };
 

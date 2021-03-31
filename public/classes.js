@@ -198,6 +198,15 @@ class SoundSource extends CanvasElement {
     }
   }
 
+  pauseAllSounds() {
+    for (const key in this.audioElements) {
+      this.pause(key);
+    }
+    for (const key in this.audioGroups) {
+      this.pause(key);
+    }
+  }
+
   playSound(key, loop, startTime) {
     const newSource = this.audioContext.createBufferSource();
     const gainNode = this.audioContext.createGain();
@@ -361,6 +370,7 @@ class Person extends SoundSource {
     }
 
     if (state === ELEMENT_STATE.WALKING) {
+      console.log(this.id + ' walking');
       this.play(SOUND_NAME.FOOTSTEP);
     } else if (state === ELEMENT_STATE.PREPARING_WORK) {
       const timeToSitDown = 3500;
@@ -980,6 +990,7 @@ class AudioContextAndScene {
         }
       );
       clusterElements.push(chair0);
+      chairList.push(chair0);
 
       // bottom left chair
       const botLeftChairCoordinates = rotateCoordinates(unitLen, 150 + rotation);
@@ -1001,6 +1012,7 @@ class AudioContextAndScene {
         }
       );
       clusterElements.push(chair1);
+      chairList.push(chair1);
 
       // bottom right chair
       const botRightChairCoordinates = rotateCoordinates(unitLen, 30 + rotation);
@@ -1022,6 +1034,7 @@ class AudioContextAndScene {
         }
       );
       clusterElements.push(chair2);
+      chairList.push(chair2);
     } else if (chairNum === 2) {
       const unitLen = {x: radius + CHAIR_LENGTH * 0.4, y: 0};
       // top chair
@@ -1044,6 +1057,7 @@ class AudioContextAndScene {
         }
       );
       clusterElements.push(chair0);
+      chairList.push(chair0);
       // bottom chair
       const botChairCoordinates = rotateCoordinates(unitLen, 90 + rotation);
       chairCoordinates.push({
@@ -1064,6 +1078,7 @@ class AudioContextAndScene {
         }
       );
       clusterElements.push(chair1);
+      chairList.push(chair1);
     }
 
     // populate chairs with people according to the index given and settings of the person

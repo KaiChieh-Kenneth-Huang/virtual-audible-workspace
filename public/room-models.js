@@ -7,6 +7,8 @@ let listenerInRoom = false;
 var listener;
 var listenerAudioSettings = {};
 var personMap = {};
+var chairList = [];
+var doorElement;
 var clusters = {
   c1: {
     position: {x: 350, y: 750},
@@ -17,25 +19,22 @@ var clusters = {
       ['p1']: {
         locationIndex: 0,
         id: 'p1',
-        icon: new PersonIcon('#666', '#999', 'JD'),
+        icon: new PersonIcon('#666', '#999', getRandomUpperLetter() + getRandomUpperLetter()),
         personSettings: {
           workSound: {
-            type: PERSON_SETTING.WORK_SOUND.TYPE.fast,
-            pageFlip: PERSON_SETTING.WORK_SOUND.PAGE_FLIP.default,
+            type: PERSON_SETTING.WORK_SOUND.TYPE.slow,
             click: PERSON_SETTING.WORK_SOUND.CLICK.default,
           },
           otherSound: { // otherSound,
             zipUnzip: PERSON_SETTING.SPECIAL_SOUND.ZIP_UNZIP.default,
             footstep: PERSON_SETTING.SPECIAL_SOUND.FOOTSTEP.fast,
             sniffle: PERSON_SETTING.GENERAL_SOUND.SNIFFLE.default,
-            throatClear: PERSON_SETTING.GENERAL_SOUND.THROAT_CLEAR.male,
-            cough: PERSON_SETTING.GENERAL_SOUND.COUGH.male,
             sneeze: PERSON_SETTING.GENERAL_SOUND.SNEEZE.male,
           },
           habbits: { // habbits
-            chairSlideSound: PERSON_SETTING.HABBIT.CHAIR_SLIDE_SOUND.slow,
-            doorOpenCloseSound: PERSON_SETTING.HABBIT.DOOR_OPEN_CLOSE_SOUND.gentle,
-            moveOnChair: true,
+            chairSlideSound: PERSON_SETTING.HABBIT.CHAIR_SLIDE_SOUND.quick,
+            doorOpenCloseSound: PERSON_SETTING.HABBIT.DOOR_OPEN_CLOSE_SOUND.hard,
+            moveOnChair: false,
           }
         },
         isListener: false
@@ -43,23 +42,17 @@ var clusters = {
       ['p2']: {
         locationIndex: 1,
         id: 'p2',
-        icon: new PersonIcon('#666', '#999', '2'),
+        icon: new PersonIcon('#666', '#999', getRandomUpperLetter() + getRandomUpperLetter()),
         personSettings: {
           workSound: {
-            type: PERSON_SETTING.WORK_SOUND.TYPE.slow,
-            pageFlip: PERSON_SETTING.WORK_SOUND.PAGE_FLIP.default,
-            click: PERSON_SETTING.WORK_SOUND.CLICK.default,
+            type: PERSON_SETTING.WORK_SOUND.TYPE.fast,
           },
           otherSound: { // otherSound,
             zipUnzip: PERSON_SETTING.SPECIAL_SOUND.ZIP_UNZIP.default,
-            footstep: PERSON_SETTING.SPECIAL_SOUND.FOOTSTEP.fast,
-            sniffle: PERSON_SETTING.GENERAL_SOUND.SNIFFLE.default,
-            throatClear: PERSON_SETTING.GENERAL_SOUND.THROAT_CLEAR.female,
-            cough: PERSON_SETTING.GENERAL_SOUND.COUGH.female,
-            sneeze: PERSON_SETTING.GENERAL_SOUND.SNEEZE.female,
+            footstep: PERSON_SETTING.SPECIAL_SOUND.FOOTSTEP.slow,
           },
           habbits: { // habbits
-            chairSlideSound: PERSON_SETTING.HABBIT.CHAIR_SLIDE_SOUND.fast,
+            chairSlideSound: PERSON_SETTING.HABBIT.CHAIR_SLIDE_SOUND.quick,
             doorOpenCloseSound: PERSON_SETTING.HABBIT.DOOR_OPEN_CLOSE_SOUND.gentle,
             moveOnChair: true,
           }
@@ -73,23 +66,110 @@ var clusters = {
     tableType: 'round',
     chairNum: 3,
     rotation: 180,
-    personSettingsForClusterMap: {}
+    personSettingsForClusterMap: {
+      ['p3']: {
+        locationIndex: 1,
+        id: 'p3',
+        icon: new PersonIcon('#666', '#999', getRandomUpperLetter() + getRandomUpperLetter()),
+        personSettings: {
+          workSound: {
+            pageFlip: PERSON_SETTING.WORK_SOUND.PAGE_FLIP.default,
+          },
+          otherSound: { // otherSound,
+            zipUnzip: PERSON_SETTING.SPECIAL_SOUND.ZIP_UNZIP.default,
+            footstep: PERSON_SETTING.SPECIAL_SOUND.FOOTSTEP.slow,
+            cough: PERSON_SETTING.GENERAL_SOUND.COUGH.female,
+          },
+          habbits: { // habbits
+            chairSlideSound: PERSON_SETTING.HABBIT.CHAIR_SLIDE_SOUND.slow,
+            doorOpenCloseSound: PERSON_SETTING.HABBIT.DOOR_OPEN_CLOSE_SOUND.gentle,
+            moveOnChair: false,
+          }
+        },
+        isListener: false
+      }
+    }
   },
   c3: {
     position: {x: 1150, y: 750},
     tableType: 'round',
     chairNum: 3,
     rotation: 0,
-    personSettingsForClusterMap: {}
+    personSettingsForClusterMap: {
+      ['p4']: {
+        locationIndex: 1,
+        id: 'p4',
+        icon: new PersonIcon('#666', '#999', getRandomUpperLetter() + getRandomUpperLetter()),
+        personSettings: {
+          workSound: {
+            type: PERSON_SETTING.WORK_SOUND.TYPE.slow,
+            click: PERSON_SETTING.WORK_SOUND.CLICK.default,
+          },
+          otherSound: { // otherSound,
+            zipUnzip: PERSON_SETTING.SPECIAL_SOUND.ZIP_UNZIP.default,
+            footstep: PERSON_SETTING.SPECIAL_SOUND.FOOTSTEP.slow,
+          },
+          habbits: { // habbits
+            chairSlideSound: PERSON_SETTING.HABBIT.CHAIR_SLIDE_SOUND.slow,
+            doorOpenCloseSound: PERSON_SETTING.HABBIT.DOOR_OPEN_CLOSE_SOUND.gentle,
+            moveOnChair: false,
+          }
+        },
+        isListener: false
+      },
+      ['p5']: {
+        locationIndex: 2,
+        id: 'p5',
+        icon: new PersonIcon('#666', '#999', getRandomUpperLetter() + getRandomUpperLetter()),
+        personSettings: {
+          workSound: {
+            type: PERSON_SETTING.WORK_SOUND.TYPE.fast,
+          },
+          otherSound: { // otherSound,
+            zipUnzip: PERSON_SETTING.SPECIAL_SOUND.ZIP_UNZIP.default,
+            footstep: PERSON_SETTING.SPECIAL_SOUND.FOOTSTEP.fast,
+          },
+          habbits: { // habbits
+            chairSlideSound: PERSON_SETTING.HABBIT.CHAIR_SLIDE_SOUND.quick,
+            doorOpenCloseSound: PERSON_SETTING.HABBIT.DOOR_OPEN_CLOSE_SOUND.hard,
+            moveOnChair: false,
+          }
+        },
+        isListener: false
+      }
+    }
   },
   c4: {
     position: {x: 1350, y: 250},
     tableType: 'square',
     chairNum: 2,
     rotation: 90,
-    personSettingsForClusterMap: {}
+    personSettingsForClusterMap: {
+      ['p6']: {
+        locationIndex: 1,
+        id: 'p6',
+        icon: new PersonIcon('#666', '#999', getRandomUpperLetter() + getRandomUpperLetter()),
+        personSettings: {
+          workSound: {
+            type: PERSON_SETTING.WORK_SOUND.TYPE.slow,
+          },
+          otherSound: { // otherSound,
+            zipUnzip: PERSON_SETTING.SPECIAL_SOUND.ZIP_UNZIP.default,
+            footstep: PERSON_SETTING.SPECIAL_SOUND.FOOTSTEP.slow,
+            sneeze: PERSON_SETTING.GENERAL_SOUND.SNEEZE.female,
+          },
+          habbits: { // habbits
+            chairSlideSound: PERSON_SETTING.HABBIT.CHAIR_SLIDE_SOUND.slow,
+            doorOpenCloseSound: PERSON_SETTING.HABBIT.DOOR_OPEN_CLOSE_SOUND.gentle,
+            moveOnChair: true,
+          }
+        },
+        isListener: false
+      }
+    }
   }
 };
+var generatedIdCount = 0;
 
 let audioReady = false;
 
@@ -182,11 +262,13 @@ const enterRoom = () => {
 
   // todo: assign object in use (use the seat generation function below for it...) (difficult because item in use was destroyed...)
   const useSavedStatus = (!!listenerStatus && listenerInRoom)
-  // if listener not in seat create new listener here
+
   listener = null;
+  personMap = {}; // clear map of all persons and recreate
+  chairList = [];
 
   // otherwise generate the listener in the get cluster function
-  const doorElement = audioContextAndScene.getNewDoor(ELEMENT_STATE.AVAILABLE, {...DOOR_LOCATION, z: 1}, 0);
+  doorElement = audioContextAndScene.getNewDoor(ELEMENT_STATE.AVAILABLE, {...DOOR_LOCATION, z: 1}, 0);
   // setup initial scene
   const newElements = [
     doorElement,
@@ -199,7 +281,6 @@ const enterRoom = () => {
       newElements.push(element);
     });
   }
-  personMap = {}; // clear map of all persons and recreate
   // if listener is in seat, it will be assigned in the getCluster function above
   if (!listener) {
     listener = audioContextAndScene.makeNewPersonWithSettings(
@@ -219,9 +300,78 @@ const enterRoom = () => {
   setTimeout(() => { // selectRoomProperties can't be run right away otherwise it won't be applied
     selectRoomProperties();
     if (!listenerInRoom) {
-      canvasControl.useElement(doorElement);
+      canvasControl.enterDoor(listener, doorElement);
     }
   }, 300);
+}
+
+function checkSequence() {
+  if (sequenceTime > generatedSequence[curSequenceIdx].time) {
+    runEvent(generatedSequence[curSequenceIdx]);
+    curSequenceIdx++
+    if (curSequenceIdx >= generatedSequence.length) { // repeat sequence
+      curSequenceIdx = 0;
+      sequenceTime = 0;
+    }
+  }
+}
+
+const personEnterRoom = (id, icon, audioSettings) => {
+  const newPerson = audioContextAndScene.makeNewPersonWithSettings(
+    id,
+    ELEMENT_STATE.IDLE,
+    icon,
+    {x: DOOR_LOCATION.x + PERSON_SIZE, y: DOOR_LOCATION.y, z: 1},
+    90, // orientation; up is 0
+    audioSettings,
+    false // is listener
+  );
+  canvasControl.addElement(newPerson);
+  canvasControl.enterDoor(newPerson, doorElement);
+  
+  return newPerson;
+}
+
+const runEvent = (event) => {
+  if (event.type === SEQUENCE_EVENT.entryRandOccupy) {
+    let id = event.person.id;
+    let icon = event.person.icon;
+    if (!id) {
+      generatedIdCount++;
+      id = 'g' + generatedIdCount;
+    }
+    if (!icon) {
+      icon = new PersonIcon('#666', '#999', getRandomUpperLetter() + getRandomUpperLetter());
+    }
+    const newPerson = personEnterRoom(id, icon, event.person.audioSettings);
+    setTimeout(() => {
+      const availableChairs = chairList.filter(chair => chair.state === ELEMENT_STATE.AVAILABLE);
+      if (availableChairs.length) {
+        randomOccupyChair(newPerson);
+      } else { // exit if there is no more seats
+        canvasControl.moveToAndUseElement(newPerson, doorElement);
+      }
+    }, 2000 + Math.random() * 5000);
+  } else if (event.type === SEQUENCE_EVENT.randSwitch) {
+    const workingPersons = Object.values(personMap).filter(person => {
+      return person.state === ELEMENT_STATE.WORKING && !person.isListener;
+    });
+    randomOccupyChair(workingPersons[Math.floor(Math.random() * workingPersons.length)]);
+  } else if (event.type === SEQUENCE_EVENT.randExit) {
+    const workingPersons = Object.values(personMap).filter(person => {
+      return person.state === ELEMENT_STATE.WORKING && !person.isListener;
+    });
+    canvasControl.moveToAndUseElement(workingPersons[Math.floor(Math.random() * workingPersons.length)], doorElement);
+  }
+
+  function randomOccupyChair(person) {
+    const availableChairs = chairList.filter(chair => chair.state === ELEMENT_STATE.AVAILABLE);
+    if (availableChairs.length) {
+      canvasControl.moveToAndUseElement(person, availableChairs[Math.floor(Math.random() * availableChairs.length)]);
+    } else {
+      console.log('No seats available.')
+    }
+  }
 }
 
 const getListenerAudioSettings = () => {

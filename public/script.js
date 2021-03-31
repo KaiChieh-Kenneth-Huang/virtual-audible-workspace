@@ -13,6 +13,9 @@ var avatarAudioProfile = {};
 var soundAvatarGenerator;
 var singleSoundPlayer;
 
+var sequenceTime = 0;
+var sequenceTickerInterval;
+
 const backgroundSoundGain = {
   nowhere: 0.5,
   people: 0.1,
@@ -734,6 +737,10 @@ function setUpRoomPage() {
   if (soundAvatarGenerator.isAvatarPlaying) {
     playPauseAvatarSound.bind(document.querySelector('#listen-to-avatar-btn'))();
   }
+  sequenceTickerInterval = setInterval(() => {
+    sequenceTime++;
+    checkSequence();
+  }, 1000)
 }
 
 function exitLandingPage() {
@@ -767,6 +774,8 @@ function exitRoomPage() {
   newAudio();
   window.removeEventListener('resize', resizeFunc);
   canvasContainer.removeChild(oldCanvas);
+
+  clearInterval(sequenceTickerInterval);
 }
 
 function setSelectedBackgroundSound(value) {
@@ -904,4 +913,10 @@ function flattenObjectToUniqueStringArray(obj) {
     }
     processObj(obj);
     return set.keys();
+}
+
+function getRandomUpperLetter() {
+  const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+  return alphabet[Math.floor(Math.random() * alphabet.length)];
 }
