@@ -370,7 +370,6 @@ class Person extends SoundSource {
     }
 
     if (state === ELEMENT_STATE.WALKING) {
-      console.log(this.id + ' walking');
       this.play(SOUND_NAME.FOOTSTEP);
     } else if (state === ELEMENT_STATE.PREPARING_WORK) {
       const timeToSitDown = 3500;

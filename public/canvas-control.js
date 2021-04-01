@@ -196,31 +196,41 @@ CanvasControl.prototype.getCursorPosition = function(event) {
   };
 };
 
+CanvasControl.prototype.toRealUnit = function(pos, numerator, denominator) {
+  return pos * numerator / denominator;
+}
+CanvasControl.prototype.toRealWidth = function(pos) {
+  return this.toRealUnit(pos, this._canvas.width, MAX_CANVAS_WIDTH);
+}
+CanvasControl.prototype.toRealHeight = function(pos) {
+  return this.toRealUnit(pos, this._canvas.height, MAX_CANVAS_HEIGHT);
+}
+
+CanvasControl.prototype.toSystemUnit = function(pos, numerator, denominator) {
+  return pos * numerator / denominator;
+}
+CanvasControl.prototype.toSystemWidth = function(pos) {
+  return this.toSystemUnit(pos, MAX_CANVAS_WIDTH, this._canvas.width);
+}
+CanvasControl.prototype.toSystemHeight = function(pos) {
+  return this.toSystemUnit(pos, MAX_CANVAS_HEIGHT, this._canvas.height);
+}
+
 CanvasControl.prototype.getNearestElement = function(cursorPosition) {
   let minDistance = 1e8;
   let element;
   let x = 0;
   let y = 0;
-  
-  const toRealUnit = (pos, numerator, denominator) => {
-    return pos * numerator / denominator;
-  }
-  const toRealWidth = (pos) => {
-    return toRealUnit(pos, this._canvas.width, MAX_CANVAS_WIDTH);
-  }
-  const toRealHeight = (pos) => {
-    return toRealUnit(pos, this._canvas.height, MAX_CANVAS_HEIGHT);
-  }
 
   for (let i = 0; i < this._elements.length; i++) {
     if (this._elements[i].clickable == true) {
-      let dx = toRealWidth(this._elements[i].position.x) - cursorPosition.x;
-      let dy = toRealHeight(this._elements[i].position.y) - cursorPosition.y;
+      let dx = this.toRealWidth(this._elements[i].position.x) - cursorPosition.x;
+      let dy = this.toRealHeight(this._elements[i].position.y) - cursorPosition.y;
       let distance = Math.abs(dx) + Math.abs(dy); // Manhattan distance.
       if ( // todo: problem arise when rotation performed. consider determining whether pointer is in rotated bounding rectangle
         distance < minDistance
-        && Math.abs(dx) < toRealWidth(this._elements[i].width / 2)
-        && Math.abs(dy) < toRealHeight(this._elements[i].height / 2)
+        && Math.abs(dx) < this.toRealWidth(this._elements[i].width / 2)
+        && Math.abs(dy) < this.toRealHeight(this._elements[i].height / 2)
       ) {
         minDistance = distance;
         element = this._elements[i];
@@ -329,64 +339,211 @@ CanvasControl.prototype.enterDoor = function(actor, door) {
   }
 }
 
-CanvasControl.prototype.moveToAndUseElement = function(actor, selectedElement) {
-  const moveStepSize = 2;
-  const setPersonInCluster = (selectedElement) => {
-    clusters[selectedElement.clusterInfo.id].personSettingsForClusterMap[actor.id] = {
-      locationIndex: selectedElement.clusterInfo.index,
-      id: actor.id,
-      icon: actor.icon,
-      personSettings: {
-        workSound: actor.audioProfileParams.workSound,
-        otherSound: actor.audioProfileParams.otherSound,
-        habbits: actor.habbits
-      },
-      isListener: actor.isListener
-    };
+// this function directly adds to the array: wayPoints
+CanvasControl.prototype.getWayPoints = function(startPos, endPos, wayPoints) {
+  // go from end position to start position and try to avoid obstacles
+  const delX = startPos.x - endPos.x;
+  const delY = startPos.y - endPos.y;
+  const delSq = delX * delX + delY * delY;
+  const reduceFactor = Math.sqrt(delSq);
+  const stepDelX = delX / reduceFactor * PERSON_SIZE;
+  const stepDelY = delY / reduceFactor * PERSON_SIZE;
+  let curPos = {...endPos};
+
+  while ((startPos.x - curPos.x) * delX > 0 || (startPos.y - curPos.y) * delY > 0) { // move towards target until hitting a barrier
+    const radiusVector = getRadiusVector(curPos);
+    if (radiusVector) {
+      const tanVector = {x: radiusVector.y, y: -radiusVector.x};
+      const direction = stepDelX * tanVector.x + stepDelY * tanVector.y < 0 ? -1 : 1;
+      while (getRadiusVector(curPos)) { // move until out of circle 
+        curPos.x += tanVector.x * direction;
+        curPos.y += tanVector.y * direction;
+      }
+      // add to way point
+      wayPoints.push(curPos);
+      this.getWayPoints(startPos, curPos, wayPoints);
+      return;
+    }
+    curPos.x = curPos.x + stepDelX;
+    curPos.y = curPos.y + stepDelY;
   }
-  const startMoving = () => {
-    actor.setState(ELEMENT_STATE.WALKING);
+
+  // no barrier hit until reaching destination
+  // do nothing
+}
+function getRadiusVector(position) {
+  for (const key in clusters) {
+    let radius = clusters[key].tableType === 'round' ? ROUND_TABLE_SIZE / 2 : Math.max(TABLE_WIDTH, TABLE_LENGTH) / 2;
+    radius += 1.5 * CHAIR_LENGTH + 0.5 * PERSON_SIZE;
+    if (isWithinDist(clusters[key].position, position, radius)) {
+      const delX = position.x - clusters[key].position.x;
+      const delY = position.y - clusters[key].position.y;
+      const delSq = delX * delX + delY * delY;
+      const reduceFactor = Math.sqrt(delSq);
+
+      return {x: delX / reduceFactor, y: delY / reduceFactor};
+    }
+  }
+  return null;
+}
+function isWithinDist(pos1, pos2, dist) {
+  const delX = pos1.x - pos2.x;
+  const delY = pos1.y - pos2.y;
+  return delX * delX + delY * delY < dist * dist;
+}
+function setPersonInCluster (actor, selectedElement) {
+  clusters[selectedElement.clusterInfo.id].personSettingsForClusterMap[actor.id] = {
+    locationIndex: selectedElement.clusterInfo.index,
+    id: actor.id,
+    icon: actor.icon,
+    personSettings: {
+      workSound: actor.audioProfileParams.workSound,
+      otherSound: actor.audioProfileParams.otherSound,
+      habbits: actor.habbits
+    },
+    isListener: actor.isListener
+  };
+}
+
+CanvasControl.prototype.moveToTarget = function(actor, target, callback) {
+  const startPos = actor.position;
+  const endPos = target.position;
+  const wayPoints = [];
+  let firstWayPoint;
+
+  // step 1: get out of the circle if seat is in a circle
+  const delX = endPos.x - startPos.x;
+  const delY = endPos.y - startPos.y;
+  let curPos = {...startPos};
+
+  const radiusVector = getRadiusVector(startPos);
+  if (radiusVector) {
+    const tanVector = {x: radiusVector.y, y: -radiusVector.x};
+    const direction = delX * tanVector.x + delY * tanVector.y < 0 ? -1 : 1;
+    while (getRadiusVector(curPos)) { // move until out of circle 
+      curPos.x += tanVector.x * direction;
+      curPos.y += tanVector.y * direction;
+    }
+    firstWayPoint = curPos;
+  }
+
+  // step 2: get all other way points
+  this.getWayPoints(curPos, endPos, wayPoints);
+
+  // step 3: push the first way point
+  if (firstWayPoint) {
+    wayPoints.push(firstWayPoint);
+  }
+
+  // step 4: start travelling to way points
+  const moveToTarget = () => {
+    let targetPos;
+    let delX;
+    let delY;
+    let delSq;
+    let reduceFactor;
+    const stepSize = 2;
+    let stepDelX;
+    let stepDelY;
+  
+    const setParams = () => {
+      targetPos = wayPoints[wayPoints.length - 1] || endPos;
+      delX = targetPos.x - actor.position.x;
+      delY = targetPos.y - actor.position.y;
+      delSq = delX * delX + delY * delY;
+      reduceFactor = Math.sqrt(delSq);
+      stepDelX = delX / reduceFactor * stepSize;
+      stepDelY = delY / reduceFactor * stepSize;
+      // set actor orientation to direction of travel
+      actor.orientation = Math.atan2(delY, delX) / Math.PI * 180 + 90;
+    }
+
+    setParams();
+  
     let moveInterval = setInterval(() => {
-      if (!this._canvas) { // object deleted
-        return;
-      }
-      if (selectedElement !== actor.itemInUse) { // user choses anther target while walking
+      if (target !== actor.itemInUse) { // user choses anther target while walking
         clearInterval(moveInterval);
         return;
       }
-
-      if (Math.abs(selectedElement.position.x - actor.position.x) > moveStepSize) {
-        if (selectedElement.position.x > actor.position.x) {
-          actor.position.x += moveStepSize;
-          actor.orientation = 90;
+      actor.position.x += stepDelX;
+      actor.position.y += stepDelY;
+  
+      if ((targetPos.x - actor.position.x) * delX > 0 || (targetPos.y - actor.position.y) * delY > 0) {
+        // continue moving
+      } else {
+        actor.position.x = targetPos.x;
+        actor.position.y = targetPos.y;
+        if (targetPos === endPos) {
+          callback();
+          clearInterval(moveInterval);
         } else {
-          actor.position.x -= moveStepSize;
-          actor.orientation = -90;
+          wayPoints.pop();
+          setParams();
         }
-      } else if (Math.abs(selectedElement.position.y - actor.position.y) > moveStepSize) {
-        if (selectedElement.position.y > actor.position.y) {
-          actor.position.y += moveStepSize;
-          actor.orientation = 180;
-        } else {
-          actor.position.y -= moveStepSize;
-          actor.orientation = 0;
-        }
-      } else { // reaches destination
-        actor.position.x = selectedElement.position.x;
-        actor.position.y = selectedElement.position.y;
-        this.useElement(actor, selectedElement);
-        actor.orientation = selectedElement.orientation;
-
-        if (actor === this.listener && selectedElement.constructor.name === 'Chair') { // listener can be in the middle of walking
-          setPersonInCluster(selectedElement);
-        }
-        
-        clearInterval(moveInterval);
       }
       this.invokeCallback();
       this.draw();
-      
     }, 20);
+  }
+  moveToTarget();
+}
+
+CanvasControl.prototype.moveToAndUseElement = function(actor, selectedElement) {
+  const moveStepSize = 2;
+  
+  const startMoving = () => {
+    const reachedDest = () => {
+      this.useElement(actor, selectedElement);
+      actor.orientation = selectedElement.orientation;
+
+      if (actor === this.listener && selectedElement.constructor.name === 'Chair') { // listener can be in the middle of walking
+        setPersonInCluster(actor, selectedElement);
+      }
+    };
+    actor.setState(ELEMENT_STATE.WALKING);
+    this.moveToTarget(actor, selectedElement, reachedDest);
+    
+    // let moveInterval = setInterval(() => {
+    //   if (!this._canvas) { // object deleted
+    //     return;
+    //   }
+    //   if (selectedElement !== actor.itemInUse) { // user choses anther target while walking
+    //     clearInterval(moveInterval);
+    //     return;
+    //   }
+
+    //   if (Math.abs(selectedElement.position.x - actor.position.x) > moveStepSize) {
+    //     if (selectedElement.position.x > actor.position.x) {
+    //       actor.position.x += moveStepSize;
+    //       actor.orientation = 90;
+    //     } else {
+    //       actor.position.x -= moveStepSize;
+    //       actor.orientation = -90;
+    //     }
+    //   } else if (Math.abs(selectedElement.position.y - actor.position.y) > moveStepSize) {
+    //     if (selectedElement.position.y > actor.position.y) {
+    //       actor.position.y += moveStepSize;
+    //       actor.orientation = 180;
+    //     } else {
+    //       actor.position.y -= moveStepSize;
+    //       actor.orientation = 0;
+    //     }
+    //   } else { // reaches destination
+    //     actor.position.x = selectedElement.position.x;
+    //     actor.position.y = selectedElement.position.y;
+    //     this.useElement(actor, selectedElement);
+    //     actor.orientation = selectedElement.orientation;
+
+    //     if (actor === this.listener && selectedElement.constructor.name === 'Chair') { // listener can be in the middle of walking
+    //       setPersonInCluster(selectedElement);
+    //     }
+        
+    //     clearInterval(moveInterval);
+    //   }
+    //   this.invokeCallback();
+    //   this.draw();
+      
+    // }, 20);
   }
 
   const selectElement = (actor, selectedElement) => {
@@ -421,8 +578,7 @@ CanvasControl.prototype.moveToAndUseElement = function(actor, selectedElement) {
       }
     }
     if (actor !== this.listener && selectedElement.constructor.name === 'Chair') { // listener can be in the middle of walking
-      console.log('added to cluster')
-      setPersonInCluster(selectedElement);
+      setPersonInCluster(actor, selectedElement);
     }
     if (actor.state === ELEMENT_STATE.WORKING) {
       actor.setState(ELEMENT_STATE.PREPARING_TO_GO);
