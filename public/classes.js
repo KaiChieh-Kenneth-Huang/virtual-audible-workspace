@@ -436,17 +436,17 @@ class Chair extends SoundSource {
       {
         [SOUND_NAME.CHAIR_SLIDE_QUICK]: new AudioSettings(
           SOUND_SRCS.chair.slideQuick,
-          1,
+          0.5,
           AUDIO_SETTING.DEFAULT,
         ),
         [SOUND_NAME.CHAIR_SLIDE_SLOW]: new AudioSettings(
           SOUND_SRCS.chair.slideSlow,
-          1,
+          0.5,
           AUDIO_SETTING.DEFAULT,
         ),
         [SOUND_NAME.CHAIR_SLIDE_SLOW_SQUEAKY]: new AudioSettings(
           SOUND_SRCS.chair.slideSlowSqueaky,
-          1,
+          0.5,
           AUDIO_SETTING.DEFAULT,
         ),
         [SOUND_NAME.CHAIR_MOVING_CREAK]: new AudioSettings(

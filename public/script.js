@@ -17,9 +17,9 @@ var sequenceTime = 0;
 var sequenceTickerInterval;
 
 const backgroundSoundGain = {
-  nowhere: 0.5,
-  people: 0.1,
-  urban: 0.1,
+  nowhere: 0.8,
+  people: 0.02,
+  urban: 0.05,
   nature: 0.5,
 }
 

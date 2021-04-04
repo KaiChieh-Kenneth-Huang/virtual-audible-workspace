@@ -4,7 +4,7 @@ const SEQUENCE_EVENT = {
     entryRandOccupy: 'entry-random-occupy',
     randExit: 'random-exit'
 }
-const speedMultiplier = 10;
+const speedMultiplier = 1;
 const SECS_IN_MIN = 60 / speedMultiplier;
 
 var curSequenceIdx = 0;
