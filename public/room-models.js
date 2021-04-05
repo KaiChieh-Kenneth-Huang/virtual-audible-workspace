@@ -50,6 +50,7 @@ var clusters = {
           otherSound: { // otherSound,
             zipUnzip: PERSON_SETTING.SPECIAL_SOUND.ZIP_UNZIP.default,
             footstep: PERSON_SETTING.SPECIAL_SOUND.FOOTSTEP.slow,
+            throatClear: PERSON_SETTING.GENERAL_SOUND.THROAT_CLEAR.female
           },
           habbits: { // habbits
             chairSlideSound: PERSON_SETTING.HABBIT.CHAIR_SLIDE_SOUND.quick,
@@ -128,6 +129,7 @@ var clusters = {
           otherSound: { // otherSound,
             zipUnzip: PERSON_SETTING.SPECIAL_SOUND.ZIP_UNZIP.default,
             footstep: PERSON_SETTING.SPECIAL_SOUND.FOOTSTEP.fast,
+            throatClear: PERSON_SETTING.GENERAL_SOUND.THROAT_CLEAR.male
           },
           habbits: { // habbits
             chairSlideSound: PERSON_SETTING.HABBIT.CHAIR_SLIDE_SOUND.quick,

@@ -59,6 +59,7 @@ var generatedSequence = [
                   zipUnzip: PERSON_SETTING.SPECIAL_SOUND.ZIP_UNZIP.default,
                   footstep: PERSON_SETTING.SPECIAL_SOUND.FOOTSTEP.slow,
                   sniffle: PERSON_SETTING.GENERAL_SOUND.SNIFFLE.default,
+                  throatClear: PERSON_SETTING.GENERAL_SOUND.THROAT_CLEAR.male
                 },
                 habbits: { // habbits
                   chairSlideSound: PERSON_SETTING.HABBIT.CHAIR_SLIDE_SOUND.slow,
